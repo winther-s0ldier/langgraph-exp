@@ -1,0 +1,120 @@
+{
+  "metric": "event_frequency",
+  "title": "Event Frequency Distribution",
+  "data": {
+    "top_events": [
+      {
+        "event": "_user",
+        "count": 3959,
+        "pct": 8.99
+      },
+      {
+        "event": "_location_special-town-search",
+        "count": 2847,
+        "pct": 6.47
+      },
+      {
+        "event": "Buslist_date change",
+        "count": 2806,
+        "pct": 6.37
+      },
+      {
+        "event": "_location_elastic-town-search",
+        "count": 2149,
+        "pct": 4.88
+      },
+      {
+        "event": "_bus-search_user-bus-search",
+        "count": 1592,
+        "pct": 3.62
+      },
+      {
+        "event": "_location_from-town",
+        "count": 1560,
+        "pct": 3.54
+      },
+      {
+        "event": "_bus-search_list",
+        "count": 1478,
+        "pct": 3.36
+      },
+      {
+        "event": "_rewards_best-V2",
+        "count": 1431,
+        "pct": 3.25
+      },
+      {
+        "event": "bus_search",
+        "count": 1429,
+        "pct": 3.25
+      },
+      {
+        "event": "bus_result",
+        "count": 1426,
+        "pct": 3.24
+      },
+      {
+        "event": "pageview_bus_list",
+        "count": 1358,
+        "pct": 3.08
+      },
+      {
+        "event": "_ticket",
+        "count": 1236,
+        "pct": 2.81
+      },
+      {
+        "event": "select_seat",
+        "count": 1234,
+        "pct": 2.8
+      },
+      {
+        "event": "_profile",
+        "count": 1182,
+        "pct": 2.68
+      },
+      {
+        "event": "SeatSelection_Click On Back",
+        "count": 1116,
+        "pct": 2.53
+      },
+      {
+        "event": "pageview_seat_selection",
+        "count": 1115,
+        "pct": 2.53
+      },
+      {
+        "event": "Buslist_bus_selection",
+        "count": 1062,
+        "pct": 2.41
+      },
+      {
+        "event": "bus_detail",
+        "count": 1061,
+        "pct": 2.41
+      },
+      {
+        "event": "_history_recommended-journey",
+        "count": 1042,
+        "pct": 2.37
+      },
+      {
+        "event": "_bus-search_v2_layout",
+        "count": 1025,
+        "pct": 2.33
+      }
+    ],
+    "categories": {
+      "application": 44031
+    },
+    "power": {
+      "median": 56,
+      "p90": 148,
+      "p99": 720,
+      "max": 1921,
+      "above_200": 34
+    }
+  },
+  "insights": "<h4>Analysis of Bus Ticket Booking App Dataset</h4>\n\n<p>The dataset contains a total of <strong>44,031 events</strong> recorded from <strong>499 users</strong> over the period from <strong>December 24, 2025</strong> to <strong>January 20, 2026</strong>. There are <strong>80 unique event types</strong> in the application category.</p>\n\n<h4>Dominant Patterns</h4>\n<p>The following events dominate user interactions:</p>\n<ul>\n    <li><strong>_user:</strong> 3,959 events (8.99%)</li>\n    <li><strong>_location_special-town-search:</strong> 2,847 events (6.47%)</li>\n    <li><strong>Buslist_date change:</strong> 2,806 events (6.37%)</li>\n    <li><strong>_location_elastic-town-search:</strong> 2,149 events (4.88%)</li>\n    <li><strong>_bus-search_user-bus-search:</strong> 1,592 events (3.62%)</li>\n    <li><strong>_location_from-town:</strong> 1,560 events (3.54%)</li>\n    <li><strong>_bus-search_list:</strong> 1,478 events (3.36%)</li>\n    <li><strong>_rewards_best-V2:</strong> 1,431 events (3.25%)</li>\n    <li><strong>bus_search:</strong> 1,429 events (3.25%)</li>\n    <li><strong>bus_result:</strong> 1,426 events (3.24%)</li>\n</ul>\n<p>This distribution indicates that users primarily engage with search-related functionalities, particularly focusing on location searches and bus listings. The high frequency of the <strong>_user</strong> event suggests that user identification or session initiation is a key interaction point.</p>\n\n<h4>Event Noise</h4>\n<p>There are no events that appear suspiciously often, indicating no clear logging bugs. However, events with very low counts (< 10) were not explicitly identified in the summary, suggesting that there may be features that are underused or potentially broken. Further investigation into events with low counts is recommended.</p>\n\n<h4>Power Users</h4>\n<p>The analysis of user engagement reveals the following statistics:</p>\n<ul>\n    <li><strong>Median event count:</strong> 56</li>\n    <li><strong>P90 event count:</strong> 148</li>\n    <li><strong>P99 event count:</strong> 720</li>\n    <li><strong>Maximum event count:</strong> 1,921</li>\n    <li><strong>Users above 200 events:</strong> 34</li>\n</ul>\n<p>Power users (P90+) exhibit significantly higher engagement compared to casual users, with P90 users averaging 148 events compared to the median of 56. This indicates a strong engagement ceiling and suggests that a small segment of users is highly invested in the app.</p>\n\n<h4>Consolidation</h4>\n<p>Upon reviewing the event names, there are several events related to bus searching and location that could potentially be consolidated:</p>\n<ul>\n    <li><strong>_location_special-town-search</strong> and <strong>_location_elastic-town-search</strong> may be redundant.</li>\n    <li><strong>_bus-search_user-bus-search</strong> and <strong>bus_search</strong> could be merged for clarity.</li>\n</ul>\n<p>Consolidating these events could simplify the event tracking and provide clearer insights into user behavior.</p>",
+  "iterations": 2
+}

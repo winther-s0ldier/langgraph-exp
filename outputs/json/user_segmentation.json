@@ -1,0 +1,24 @@
+{
+  "metric": "user_segmentation",
+  "title": "User Segmentation",
+  "data": [
+    {
+      "label": "Outliers",
+      "id": -1,
+      "size": 34,
+      "pct": 6.8,
+      "avg_events": 361.8,
+      "booking_rate": 35.3
+    },
+    {
+      "label": "Segment 0",
+      "id": 0,
+      "size": 465,
+      "pct": 93.2,
+      "avg_events": 68.2,
+      "booking_rate": 4.7
+    }
+  ],
+  "insights": "<h4>Dataset Summary</h4>\n<p>The dataset contains a total of <strong>44,031 events</</strong> recorded from <strong>499 users</strong> over a date range from <strong>December 24, 2025</strong> to <strong>January 20, 2026</strong>. There are <strong>80 unique event types</strong> categorized under the application.</p>\n\n<h4>Segment Analysis</h4>\n\n<h4>Outliers</h4>\n<p><strong>PERSONA NAME:</strong> Outliers</p>\n<p><strong>PROFILE:</strong> This segment consists of <strong>34 users</strong>, representing <strong>6.8%</strong> of the total user base. They have an average of <strong>361.8 events</strong> and a booking rate of <strong>35.3%</strong>.</p>\n<p><strong>TARGETING RECOMMENDATION:</strong> Consider analyzing their behavior further to identify what drives their engagement and booking, and create tailored experiences or offers that could enhance their usage.</p>\n\n<h4>Segment 0</h4>\n<p><strong>PERSONA NAME:</strong> Casual Users</p>\n<p><strong>PROFILE:</strong> This segment includes <strong>465 users</strong>, making up <strong>93.2%</strong> of the total user base. They engage with an average of <strong>68.2 events</strong> but have a low booking rate of <strong>4.7%</strong>.</p>\n<p><strong>TARGETING RECOMMENDATION:</strong> Implement targeted push notifications with incentives such as discounts or promotions to encourage bookings among this segment.</p>\n\n<h4>Overall Assessment</h4>\n<p>The user base appears to have a significant portion of low-engagement users (Casual Users) compared to a smaller group of more engaged users (Outliers). The ratio of high-value users (Outliers) to low-engagement users (Casual Users) is approximately <strong>1:13.7</strong>, indicating a need for strategies to convert more casual users into active bookers.</p>",
+  "iterations": 2
+}

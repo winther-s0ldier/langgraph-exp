@@ -1,0 +1,62 @@
+{
+  "metric": "funnel_analysis",
+  "title": "Booking Funnel Analysis",
+  "data": [
+    {
+      "stage": "App Start",
+      "users": 479,
+      "pct": 96.0
+    },
+    {
+      "stage": "Search",
+      "users": 475,
+      "pct": 95.2,
+      "conv_from_prev": 99.2,
+      "lost": 4
+    },
+    {
+      "stage": "Results Viewed",
+      "users": 385,
+      "pct": 77.2,
+      "conv_from_prev": 81.1,
+      "lost": 90
+    },
+    {
+      "stage": "Bus Selected",
+      "users": 206,
+      "pct": 41.3,
+      "conv_from_prev": 53.5,
+      "lost": 179
+    },
+    {
+      "stage": "Seat Selection",
+      "users": 206,
+      "pct": 41.3,
+      "conv_from_prev": 100.0,
+      "lost": 0
+    },
+    {
+      "stage": "Passenger Details",
+      "users": 40,
+      "pct": 8.0,
+      "conv_from_prev": 19.4,
+      "lost": 166
+    },
+    {
+      "stage": "Payment Initiated",
+      "users": 36,
+      "pct": 7.2,
+      "conv_from_prev": 90.0,
+      "lost": 4
+    },
+    {
+      "stage": "Payment Success",
+      "users": 9,
+      "pct": 1.8,
+      "conv_from_prev": 25.0,
+      "lost": 27
+    }
+  ],
+  "insights": "<h4>Dataset Summary</h4>\n<p>Total Events: 44031</p>\n<p>Total Users: 499</p>\n<p>Event Types: 80</p>\n<p>Date Range: 24-Dec-2025 to 20-Jan-2026</p>\n\n<h4>Funnel Analysis Results</h4>\n<p><strong>App Start:</strong> 479 users (96.0%)</p>\n<p><strong>Search:</strong> 475 users (95.2%), lost 4 users (99.2% conversion from previous stage)</p>\n<p><strong>Results Viewed:</strong> 385 users (77.2%), lost 90 users (81.1% conversion from previous stage)</p>\n<p><strong>Bus Selected:</strong> 206 users (41.3%), lost 179 users (53.5% conversion from previous stage)</p>\n<p><strong>Seat Selection:</strong> 206 users (41.3%), lost 0 users (100% conversion from previous stage)</p>\n<p><strong>Passenger Details:</strong> 40 users (8.0%), lost 166 users (19.4% conversion from previous stage)</p>\n<p><strong>Payment Initiated:</strong> 36 users (7.2%), lost 4 users (90% conversion from previous stage)</p>\n<p><strong>Payment Success:</strong> 9 users (1.8%), lost 27 users (25.0% conversion from previous stage)</p>\n\n<h4>Insights</h4>\n\n<h4>BIGGEST LEAK</h4>\n<p>The biggest drop-off occurs between the \"Bus Selected\" and \"Passenger Details\" stages, losing 179 users (53.5% to 8.0%). This is significantly higher than the industry benchmark of 2-5% conversion from openers to bookers, indicating a critical issue in this transition.</p>\n\n<h4>ROOT CAUSE HYPOTHESIS</h4>\n<p>The likely cause of the significant drop-off at the \"Bus Selected\" stage is that users may be overwhelmed by the passenger details form, which could be too lengthy or complex. Simplifying this process or providing clearer guidance could help retain users.</p>\n\n<h4>SECONDARY DROP-OFFS</h4>\n<p>The second worst transition is from \"Results Viewed\" to \"Bus Selected,\" losing 179 users (90 total). The third worst is from \"Passenger Details\" to \"Payment Initiated,\" losing 166 users. Both transitions indicate potential usability issues, as users are dropping off at critical decision points.</p>\n\n<h4>SPECIFIC FIX</h4>\n<p>Implement a streamlined passenger details form with fewer required fields and clearer instructions. This change could significantly improve the conversion rate from \"Passenger Details\" to \"Payment Initiated,\" potentially increasing overall bookings.</p>",
+  "iterations": 4
+}

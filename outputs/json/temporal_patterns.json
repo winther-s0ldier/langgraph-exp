@@ -1,0 +1,13 @@
+{
+  "metric": "temporal_patterns",
+  "title": "Temporal Usage Patterns",
+  "data": {
+    "peak_hour": 9,
+    "off_hour": 22,
+    "peak_day": "Friday",
+    "low_day": "Tuesday",
+    "ratio": 42.7
+  },
+  "insights": "<h4>Dataset Summary</h4>\n<p>The dataset contains a total of <strong>44,031 events</strong> recorded from <strong>499 users</strong> over a period from <strong>December 24, 2025</strong> to <strong>January 20, 2026</strong>. There are <strong>80 event types</strong> categorized under application events.</p>\n\n<h4>Temporal Usage Analysis</h4>\n<p>The analysis reveals the following key findings regarding user engagement patterns:</p>\n<ul>\n    <li><strong>Peak Hour:</strong> 9 AM</li>\n    <li><strong>Off-Peak Hour:</strong> 10 PM</li>\n    <li><strong>Peak Day:</strong> Friday</li>\n    <li><strong>Low Day:</strong> Tuesday</li>\n    <li><strong>Peak-to-Trough Ratio:</strong> 42.7</li>\n</ul>\n\n<h4>PUSH NOTIFICATION TIMING</h4>\n<p>For maximum open rates, the marketing team should send push notifications during the peak hours of <strong>9 AM</strong> on <strong>Fridays</strong>. This is when user engagement is at its highest, making it the optimal time for notifications.</p>\n\n<h4>CAPACITY PLANNING</h4>\n<p>The app requires maximum server capacity during the peak hour of <strong>9 AM</strong> on <strong>Fridays</strong>. Given the high peak-to-trough ratio of <strong>42.7</strong>, infrastructure should be prepared for significant traffic spikes during this time.</p>\n\n<h4>MARKETING WINDOWS</h4>\n<p>The best times for running in-app promotions or flash sales would be during the peak hour of <strong>9 AM</strong> on <strong>Fridays</strong>. This period aligns with high user engagement, ensuring that promotional messages reach the largest audience effectively. Additionally, considering the off-peak hour of <strong>10 PM</strong>, marketing efforts could also target this time for users who may be planning their next day\u2019s travel.</p>\n\n<h4>WEEKEND VS WEEKDAY</h4>\n<p>The data does not provide explicit weekend vs weekday usage patterns; however, the peak day being <strong>Friday</strong> suggests a potential trend towards leisure travel as users prepare for weekend trips. The low engagement on <strong>Tuesdays</strong> indicates that this app may cater more to leisure travelers rather than strictly commuters, though further analysis would be needed to confirm user demographics.</p>",
+  "iterations": 2
+}

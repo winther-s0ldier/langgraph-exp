@@ -1,0 +1,16 @@
+{
+  "metric": "retention_analysis",
+  "title": "Cohort Retention Heatmap",
+  "data": {
+    "w1_pct": 5.2,
+    "labels": [
+      "W1 (n=118)",
+      "W2 (n=220)",
+      "W3 (n=154)",
+      "W52 (n=7)"
+    ],
+    "max_weeks": 3
+  },
+  "insights": "<h4>Insights from the Bus Ticket Booking App Dataset</h4>\n\n<p>The analysis of the dataset has provided valuable insights into user retention across different cohorts. Below are the findings based on the retention matrix and dataset summary.</p>\n\n<h4>1. BEST COHORT</h4>\n<p>The cohort from Week 52 (W52) has the strongest retention, with a Week 1 retention rate of 71.4% (n=7). This high retention could be attributed to several factors:</p>\n<ul>\n  <li><strong>Seasonality:</strong> Week 52 coincides with the holiday season, which typically sees increased travel activity.</li>\n  <li><strong>Marketing Campaigns:</strong> There may have been targeted promotions during this period to encourage bookings.</li>\n  <li><strong>User Experience Improvements:</strong> If any product changes were implemented prior to this cohort, they may have positively influenced user satisfaction.</li>\n</ul>\n\n<h4>2. WORST COHORT</h4>\n<p>The cohort from Week 2 (W2) shows the fastest drop-off, with a Week 1 retention rate of 4.1% and a Week 2 retention rate of 0.0%. This significant decline indicates that users are not finding enough value to return after their initial experience.</p>\n\n<h4>3. OVERALL TREND</h4>\n<p>Retention appears to be declining across successive cohorts. The Week 1 retention rates for W1 (7.6%) and W2 (4.1%) show a downward trend, suggesting that recent changes or user engagement strategies may not be effective in retaining users over time.</p>\n\n<h4>4. RETENTION STRATEGIES</h4>\n<p>To improve Week 1 retention, the following strategies are recommended:</p>\n<ul>\n  <li><strong>Enhance Onboarding Experience:</strong> Given the low retention in W1 (7.6%), improving the onboarding process could help users understand the app's value proposition better and encourage them to return.</li>\n  <li><strong>Targeted Re-engagement Campaigns:</strong> Implementing campaigns specifically aimed at users who drop off after their first use could help bring them back. The stark drop in W2 retention (0.0%) indicates a need for strategies to re-engage users who may have had a poor initial experience.</li>\n</ul>",
+  "iterations": 2
+}

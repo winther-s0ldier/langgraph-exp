@@ -1,0 +1,92 @@
+{
+  "metric": "friction_points",
+  "title": "Friction Point Analysis",
+  "data": [
+    {
+      "event": "select_seat",
+      "repeat_rate": 17.5,
+      "avg_per_session": 7.5,
+      "total": 1234,
+      "score": 37.5
+    },
+    {
+      "event": "_location_elastic-town-search",
+      "repeat_rate": 3.3,
+      "avg_per_session": 4.5,
+      "total": 2149,
+      "score": 5.6
+    },
+    {
+      "event": "Onboarding_backpressed",
+      "repeat_rate": 5.7,
+      "avg_per_session": 1.4,
+      "total": 87,
+      "score": 5.0
+    },
+    {
+      "event": "boarding_change_pickup",
+      "repeat_rate": 1.9,
+      "avg_per_session": 2.2,
+      "total": 154,
+      "score": 2.2
+    },
+    {
+      "event": "booking_page_dropoff",
+      "repeat_rate": 1.1,
+      "avg_per_session": 3.6,
+      "total": 182,
+      "score": 1.7
+    },
+    {
+      "event": "_ticket_v2",
+      "repeat_rate": 0.6,
+      "avg_per_session": 3.0,
+      "total": 157,
+      "score": 0.8
+    },
+    {
+      "event": "_location_special-town-search",
+      "repeat_rate": 0.3,
+      "avg_per_session": 5.9,
+      "total": 2847,
+      "score": 0.6
+    },
+    {
+      "event": "Onboarding_Language",
+      "repeat_rate": 0.4,
+      "avg_per_session": 1.9,
+      "total": 949,
+      "score": 0.4
+    },
+    {
+      "event": "_user",
+      "repeat_rate": 0.2,
+      "avg_per_session": 7.9,
+      "total": 3959,
+      "score": 0.4
+    },
+    {
+      "event": "_ticket",
+      "repeat_rate": 0.2,
+      "avg_per_session": 2.6,
+      "total": 1236,
+      "score": 0.3
+    },
+    {
+      "event": "choose_language",
+      "repeat_rate": 0.1,
+      "avg_per_session": 1.9,
+      "total": 958,
+      "score": 0.1
+    },
+    {
+      "event": "Boarding_drop_locations",
+      "repeat_rate": 0.0,
+      "avg_per_session": 1.9,
+      "total": 126,
+      "score": 0.0
+    }
+  ],
+  "insights": "<h4>Friction Point 1: select_seat</h4>\n<p><strong>WHAT IT MEANS:</strong> Users are repeatedly selecting seats, likely due to the seat map being unresponsive or confusing. This could indicate that users are unsure if their selection has been registered, prompting them to tap multiple times.</p>\n<p><strong>SEVERITY:</strong> This issue affects 1234 total events, with a significant number of users and sessions impacted. The exact number of users is not provided, but the total events suggest a widespread problem.</p>\n<p><strong>PROPOSED FIX:</strong> Improve the responsiveness of the seat selection interface by providing immediate visual feedback when a seat is selected, such as highlighting the selected seat and displaying a confirmation message.</p>\n<p><strong>EXPECTED IMPACT:</strong> This fix could reduce the repeat rate of the select_seat event by at least 50%, leading to a smoother user experience and potentially increasing overall user satisfaction.</p>\n\n<h4>Friction Point 2: _location_elastic-town-search</h4>\n<p><strong>WHAT IT MEANS:</strong> Users are frequently re-entering location searches, indicating that the search results may not be relevant or satisfactory. This could lead to frustration as users attempt to find their desired locations.</p>\n<p><strong>SEVERITY:</strong> This event has a total of 2149 occurrences, suggesting that many users are experiencing this issue, although the exact number of affected users is not specified.</p>\n<p><strong>PROPOSED FIX:</strong> Enhance the search algorithm to provide more relevant results based on user input, and consider adding autocomplete suggestions to help guide users towards valid entries.</p>\n<p><strong>EXPECTED IMPACT:</strong> By improving search relevance, we could expect a reduction in repeat searches by at least 30%, leading to a more efficient booking process.</p>\n\n<h4>Friction Point 3: Onboarding_backpressed</h4>\n<p><strong>WHAT IT MEANS:</strong> Users are frequently pressing the back button during the onboarding process, which may indicate confusion or dissatisfaction with the onboarding flow. This suggests that users are not finding the information they need or are unsure of how to proceed.</p>\n<p><strong>SEVERITY:</strong> This event has a total of 87 occurrences, indicating that while the volume is lower than the previous points, it still reflects a significant number of users facing this issue during onboarding.</p>\n<p><strong>PROPOSED FIX:</strong> Revise the onboarding process to make it clearer and more intuitive, possibly by simplifying the steps or providing clearer instructions on what to expect next.</p>\n<p><strong>EXPECTED IMPACT:</strong> Improving the onboarding experience could reduce the back press rate by at least 40%, leading to higher completion rates for new users.</p>",
+  "iterations": 3
+}

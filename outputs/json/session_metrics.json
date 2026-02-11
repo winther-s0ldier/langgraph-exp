@@ -1,0 +1,21 @@
+{
+  "metric": "session_metrics",
+  "title": "Session Behaviour Metrics",
+  "data": {
+    "total_sessions": 499,
+    "avg_dur_sec": 80230.4,
+    "median_dur_sec": 278.1,
+    "avg_events": 88.2,
+    "avg_depth": 31.8,
+    "bounce_pct": 0.0,
+    "sessions_per_user": 1.0,
+    "T1_sessions": 172,
+    "T1_avg_dur": 48451.7,
+    "T1_bounce": 0.0,
+    "T2_sessions": 349,
+    "T2_avg_dur": 55934.8,
+    "T2_bounce": 0.0
+  },
+  "insights": "<h4>SESSION HEALTH</h4>\n<p>The overall assessment of session quality indicates concerning metrics. The average session duration is 80230.4 seconds, which is significantly higher than the healthy benchmark of 3-10 minutes (180-600 seconds). The average depth of 31.8 unique event types per session is well above the recommended 5+, suggesting users are engaging deeply with the app. However, the bounce rate stands at 0.0%, which is below the good threshold of 30%. This indicates that while users are not bouncing, the extremely high average duration suggests potential issues with session management or user experience.</p>\n\n<h4>ENGAGEMENT DEPTH</h4>\n<p>The event depth distribution reveals that users are highly engaged with the app, as indicated by the average depth of 31.8 unique event types. This suggests that most users are exploring various features rather than leaving after just 1-2 actions. The high engagement depth indicates a positive interaction with the app, but it raises questions about session management and whether users are finding what they need efficiently.</p>\n\n<h4>BOUNCE ANALYSIS</h4>\n<p>The bounce rate is recorded at 0.0%. This indicates that no sessions ended with 2 or fewer events, which is unusual for a booking app. Possible causes for this could include slow load times or poor onboarding processes that keep users engaged longer than necessary without completing their intended actions. The lack of bounces may also suggest that users are entering the app but not finding a clear path to booking, leading to prolonged sessions without conversions.</p>\n\n<h4>SESSION TARGETS</h4>\n<p>Based on the current data and industry standards, the product team should aim for specific session duration and depth targets. Recommended targets are:</p>\n<ul>\n    <li><strong>Session Duration:</strong> Aim for an average duration of 3-10 minutes (180-600 seconds) to ensure users are not overwhelmed or confused.</li>\n    <li><strong>Session Depth:</strong> Maintain an average depth of 5+ unique event types to encourage exploration while ensuring users can navigate efficiently.</li>\n</ul>",
+  "iterations": 2
+}

@@ -1,0 +1,19 @@
+# API Keys & Secrets
+.env
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Data files
+*.csv
+# outputs/  <-- Commented out to allow committing the report
+!outputs/analytics_report.html
+
+# IDE
+.vscode/
+.idea/

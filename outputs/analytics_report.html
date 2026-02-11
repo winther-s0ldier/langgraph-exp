@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Report</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f4f4f5;
+            --bg-tertiary: #e4e4e7;
+            --bg-card: #ffffff;
+            --border: #e4e4e7;
+            --border-hover: #d4d4d8;
+            --text-primary: #09090b;
+            --text-secondary: #52525b;
+            --text-muted: #71717a;
+            --accent: #6366f1;
+            --accent-dim: rgba(99,102,241,0.1);
+            --accent-border: rgba(99,102,241,0.2);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.65;
+            font-size: 14px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 240px; height: 100vh;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border);
+            padding: 32px 16px 24px;
+            overflow-y: auto; z-index: 100;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-brand {
+            font-size: 13px; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.8px; margin-bottom: 32px;
+            padding: 0 12px;
+        }
+        .nav-section-label {
+            font-size: 11px; font-weight: 500; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.2px;
+            padding: 0 12px; margin: 24px 0 8px;
+        }
+        .nav-item {
+            display: block; padding: 8px 12px; margin-bottom: 1px;
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 13px; font-weight: 400;
+            border-radius: 6px; transition: all 0.15s ease;
+        }
+        .nav-item:hover {
+            background: var(--accent-dim); color: var(--text-primary);
+        }
+        .nav-item.active {
+            background: var(--accent-dim); color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* Main content */
+        .main {
+            margin-left: 240px; padding: 48px 56px;
+            max-width: 960px;
+        }
+
+        /* Hero */
+        .hero { margin-bottom: 48px; }
+        .hero h1 {
+            font-size: 28px; font-weight: 600; color: var(--text-primary);
+            letter-spacing: -0.5px; margin-bottom: 6px;
+        }
+        .hero .subtitle {
+            font-size: 14px; color: var(--text-muted); font-weight: 400;
+        }
+
+        /* KPI strip */
+        .kpi-row {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+            margin-bottom: 48px;
+        }
+        .kpi {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 20px;
+        }
+        .kpi .value {
+            font-size: 24px; font-weight: 600; color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+        .kpi .label {
+            font-size: 11px; color: var(--text-muted); margin-top: 4px;
+            text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;
+        }
+
+        /* Executive summary */
+        .exec-summary {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 32px;
+            margin-bottom: 48px;
+        }
+        .exec-summary > h2 {
+            font-size: 18px; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 20px; padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .exec-summary h3 { font-size: 15px; color: var(--text-primary); margin: 20px 0 8px; font-weight: 600; }
+        .exec-summary h4 { font-size: 14px; color: var(--text-secondary); margin: 14px 0 6px; font-weight: 500; }
+        .exec-summary p { color: var(--text-secondary); margin-bottom: 8px; }
+        .exec-summary li { color: var(--text-secondary); margin-bottom: 5px; margin-left: 16px; }
+        .exec-summary strong { color: var(--text-primary); font-weight: 500; }
+
+        /* Metric card */
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 32px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .metric-card:hover { border-color: var(--border-hover); }
+
+        .metric-header {
+            padding: 24px 28px 0;
+        }
+        .metric-header h2 {
+            font-size: 17px; font-weight: 600; color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .chart-container {
+            padding: 8px 16px;
+        }
+        .chart-container .plotly-graph-div { border-radius: 8px; }
+
+        .insights-panel {
+            border-top: 1px solid var(--border);
+            padding: 24px 28px;
+        }
+        .insights-label {
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+        }
+        .insights-body { color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
+        .insights-body h3 { font-size: 14px; color: var(--text-primary); margin: 16px 0 6px; font-weight: 600; }
+        .insights-body h4 { font-size: 13px; color: var(--text-secondary); margin: 12px 0 4px; font-weight: 500; }
+        .insights-body p { margin-bottom: 6px; }
+        .insights-body li { margin-bottom: 4px; margin-left: 16px; }
+        .insights-body strong { color: var(--text-primary); font-weight: 500; }
+
+        /* Error */
+        .error-banner {
+            background: rgba(239,68,68,0.06);
+            border: 1px solid rgba(239,68,68,0.15);
+            border-radius: 10px; padding: 20px; margin-bottom: 32px;
+        }
+        .error-banner h3 { color: #fca5a5; font-size: 14px; margin-bottom: 8px; }
+        .error-banner li { color: #fb7185; margin-left: 16px; font-size: 13px; }
+
+        /* Footer */
+        .footer {
+            text-align: center; padding: 32px 0; color: var(--text-muted);
+            font-size: 12px; border-top: 1px solid var(--border); margin-top: 48px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
+
+        html { scroll-behavior: smooth; }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main { margin-left: 0; padding: 24px 20px; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-brand">Analytics</div>
+        <a href="javascript:void(0)" class="nav-item active" onclick="document.getElementById('executive').scrollIntoView({behavior:'smooth', block:'start'})">Executive Summary</a>
+        <div class="nav-section-label">Metrics</div>
+        <a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('funnel_analysis').scrollIntoView({behavior:'smooth', block:'start'})">Booking Funnel Analysis</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('dropoff_analysis').scrollIntoView({behavior:'smooth', block:'start'})">Drop-off Waterfall Analysis</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('friction_points').scrollIntoView({behavior:'smooth', block:'start'})">Friction Point Analysis</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('session_metrics').scrollIntoView({behavior:'smooth', block:'start'})">Session Behaviour Metrics</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('retention_analysis').scrollIntoView({behavior:'smooth', block:'start'})">Cohort Retention Heatmap</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('user_segmentation').scrollIntoView({behavior:'smooth', block:'start'})">User Segmentation</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('conversion_rates').scrollIntoView({behavior:'smooth', block:'start'})">Conversion Rate Analysis</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('time_to_action').scrollIntoView({behavior:'smooth', block:'start'})">Time-to-Action Analysis</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('event_frequency').scrollIntoView({behavior:'smooth', block:'start'})">Event Frequency Distribution</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('temporal_patterns').scrollIntoView({behavior:'smooth', block:'start'})">Temporal Usage Patterns</a>
+<a href="javascript:void(0)" class="nav-item" onclick="document.getElementById('user_journey_insights').scrollIntoView({behavior:'smooth', block:'start'})">User Journey & Persona Analysis</a>
+
+    </nav>
+
+    <main class="main">
+        <div class="hero">
+            <h1>Analytics Report</h1>
+            <p class="subtitle">24 Dec - 20 Jan 2026 • 499 users • 44,031 events</p>
+        </div>
+
+        <div class="kpi-row">
+            <div class="kpi"><div class="value">499</div><div class="label">Users</div></div>
+            <div class="kpi"><div class="value">44,031</div><div class="label">Events</div></div>
+            <div class="kpi"><div class="value">28</div><div class="label">Days Covered</div></div>
+            <div class="kpi"><div class="value">Friday</div><div class="label">Peak Day</div></div>
+            <div class="kpi"><div class="value">80</div><div class="label">Event Types</div></div>
+            <div class="kpi"><div class="value">11/11</div><div class="label">Metrics Completed</div></div>
+        </div>
+
+        
+
+        <section class="exec-summary" id="executive">
+            <h2>Executive Summary</h2>
+            <h3>Executive Summary</h3>
+<p>The bus ticket booking app is currently facing challenges in conversion and retention, with an overall conversion rate of 1.8% and a payment success rate of only 25%. Key user interactions show particularly high drop-off rates, especially between the seat selection and payment initiation stages, where 82.5% of users abandon the process. Immediate improvements are necessary to enhance user experience and conversion rates, leveraging identified friction points and user behavior insights.</p>
+
+<h3>Top 5 Critical Findings</h3>
+<ol>
+    <li>The overall conversion rate stands at 1.8%, below the industry benchmark of 2-5%, indicating urgent needs for improvement.</li>
+    <li>Payment success rate is only 25.0%, considerably below the acceptable threshold of 80%, with a payment failure rate of 47.2% based on 36 payment attempts.</li>
+    <li>82.5% drop-off occurs between the seat selection and payment initiation stages, with an estimated revenue impact of $8,500 due to 170 potential bookings lost.</li>
+    <li>The average session duration is 80230.4 seconds, far exceeding the healthy benchmark of 3-10 minutes, indicating possible user confusion or inefficiencies.</li>
+    <li>Only 1.8% of users complete bookings from the Shopper segment, highlighting a critical gap as 34.1% of users engage further than browsing.</li>
+</ol>
+
+<h3>Cross-Metric Correlations</h3>
+<p>High friction points, such as the select_seat event occurring 1234 times, correlate with lower conversion rates in the booking funnel, particularly the significant 82.5% drop-off between seat selection and payment initiation. Additionally, the low payment success rate of 25.0% is tied to long session durations and high drop-off rates, pointing to a need for enhanced user experience and streamlined payment processes.</p>
+
+<h3>User Health Scorecard</h3>
+<ul>
+    <li><strong>Acquisition:</strong> Needs Work - While user figures are decent at 499, conversion rates indicate that acquired users are not fully engaging.</li>
+    <li><strong>Activation:</strong> Needs Work - Only 1.8% of users are completing bookings, signifying that activated users are not following through.</li>
+    <li><strong>Retention:</strong> Needs Work - Declining retention rates across cohorts highlight significant user drop-off after initial usage.</li>
+    <li><strong>Revenue:</strong> Needs Work - Revenue losses indicated by the conversion and payment failure metrics demand urgent attention.</li>
+    <li><strong>Referral:</strong> Critical - While referral metrics are not explicitly tracked, enhancing user satisfaction could lead to organic referrals if conversion rates improve.</li>
+</ul>
+
+<h3>Strategic Recommendations</h3>
+<ul>
+    <li><strong>Enhance Payment Flow:</strong> Streamline the payment process to reduce user drop-off. Expected impact: Increase payment success rate to at least 70%, improving overall conversion to approximately 3.5%. Complexity: Medium.</li>
+    <li><strong>Simplify Seat Selection Interface:</strong> Redesign the seat selection flow to reduce confusion and drop-off. Expected impact: 50% reduction in drop-off during this phase could yield higher booking rates. Complexity: Medium.</li>
+    <li><strong>Implement Push Notifications:</strong> Use push notifications to re-engage users abandoning the app. Expected impact: Increase push conversion rate to 5% among engaged users, boosting overall conversions by 0.5%. Complexity: Low.</li>
+    <li><strong>Revise Onboarding Process:</strong> Make the onboarding experience clearer and more intuitive to improve user retention from the outset. Expected impact: Increase Week 1 retention rates significantly. Complexity: Medium.</li>
+    <li><strong>Improve Search Algorithm:</strong> Enhance search relevance and introduce autocomplete features for better user satisfaction. Expected impact: Reduce repeat searches by at least 30%, streamlining user interactions. Complexity: Medium.</li>
+</ul>
+
+<h3>Quick Wins</h3>
+<ul>
+    <li>Implement immediate visual feedback during seat selection to address user confusion, which can improve the experience within a single sprint.</li>
+    <li>Launch targeted promotions for Browsers who have shown interest to increase conversion chances quickly.</li>
+    <li>Conduct user testing focused on the registration and booking experiences to identify quick fixes that improve the onboarding process.</li>
+</ul>
+        </section>
+
+        
+        <section class="metric-card" id="funnel_analysis">
+            <div class="metric-header">
+                <h2>Booking Funnel Analysis</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="d16b8f80-c956-4d6d-b0b2-00cd47b60738" class="plotly-graph-div" style="height:520px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("d16b8f80-c956-4d6d-b0b2-00cd47b60738")) {                    Plotly.newPlot(                        "d16b8f80-c956-4d6d-b0b2-00cd47b60738",                        [{"connector":{"line":{"color":"#4c1d95","width":1}},"marker":{"color":["#818cf8","#7c3aed","#6d28d9","#a78bfa","#c084fc","#22d3ee","#2dd4bf","#34d399"]},"textinfo":"value+percent initial+percent previous","x":[479,475,385,206,206,40,36,9],"y":["App Start","Search","Results Viewed","Bus Selected","Seat Selection","Passenger Details","Payment Initiated","Payment Success"],"type":"funnel"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"Booking Funnel"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"margin":{"l":200,"r":40,"t":50,"b":40},"paper_bgcolor":"#0f172a","plot_bgcolor":"#0f172a","height":520},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Dataset Summary</h4>
+<p>Total Events: 44031</p>
+<p>Total Users: 499</p>
+<p>Event Types: 80</p>
+<p>Date Range: 24-Dec-2025 to 20-Jan-2026</p>
+
+<h4>Funnel Analysis Results</h4>
+<p><strong>App Start:</strong> 479 users (96.0%)</p>
+<p><strong>Search:</strong> 475 users (95.2%), lost 4 users (99.2% conversion from previous stage)</p>
+<p><strong>Results Viewed:</strong> 385 users (77.2%), lost 90 users (81.1% conversion from previous stage)</p>
+<p><strong>Bus Selected:</strong> 206 users (41.3%), lost 179 users (53.5% conversion from previous stage)</p>
+<p><strong>Seat Selection:</strong> 206 users (41.3%), lost 0 users (100% conversion from previous stage)</p>
+<p><strong>Passenger Details:</strong> 40 users (8.0%), lost 166 users (19.4% conversion from previous stage)</p>
+<p><strong>Payment Initiated:</strong> 36 users (7.2%), lost 4 users (90% conversion from previous stage)</p>
+<p><strong>Payment Success:</strong> 9 users (1.8%), lost 27 users (25.0% conversion from previous stage)</p>
+
+<h4>Insights</h4>
+
+<h4>BIGGEST LEAK</h4>
+<p>The biggest drop-off occurs between the "Bus Selected" and "Passenger Details" stages, losing 179 users (53.5% to 8.0%). This is significantly higher than the industry benchmark of 2-5% conversion from openers to bookers, indicating a critical issue in this transition.</p>
+
+<h4>ROOT CAUSE HYPOTHESIS</h4>
+<p>The likely cause of the significant drop-off at the "Bus Selected" stage is that users may be overwhelmed by the passenger details form, which could be too lengthy or complex. Simplifying this process or providing clearer guidance could help retain users.</p>
+
+<h4>SECONDARY DROP-OFFS</h4>
+<p>The second worst transition is from "Results Viewed" to "Bus Selected," losing 179 users (90 total). The third worst is from "Passenger Details" to "Payment Initiated," losing 166 users. Both transitions indicate potential usability issues, as users are dropping off at critical decision points.</p>
+
+<h4>SPECIFIC FIX</h4>
+<p>Implement a streamlined passenger details form with fewer required fields and clearer instructions. This change could significantly improve the conversion rate from "Passenger Details" to "Payment Initiated," potentially increasing overall bookings.</p></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="dropoff_analysis">
+            <div class="metric-header">
+                <h2>Drop-off Waterfall Analysis</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="82ae2d1e-5d09-4565-86a9-dd685ba5be8c" class="plotly-graph-div" style="height:480px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("82ae2d1e-5d09-4565-86a9-dd685ba5be8c")) {                    Plotly.newPlot(                        "82ae2d1e-5d09-4565-86a9-dd685ba5be8c",                        [{"connector":{"line":{"color":"#475569","width":1}},"decreasing":{"marker":{"color":"#ef4444"}},"increasing":{"marker":{"color":"#818cf8"}},"orientation":"v","text":["479","-95 (19.8%)","-5 (1.3%)","-173 (45.6%)","-170 (82.5%)","-27 (75.0%)"],"textfont":{"color":"#e2e8f0","size":11},"textposition":"outside","totals":{"marker":{"color":"#22d3ee"}},"x":["App Start","Search","Results","Seat Selection","Payment Init","Payment Success"],"y":[479,-95,-5,-173,-170,-27],"type":"waterfall"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"User Drop-off Waterfall"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"xaxis":{"tickangle":-30},"paper_bgcolor":"#0f172a","plot_bgcolor":"#1e293b","height":480,"yaxis":{"title":{"text":"Users"}}},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Analysis of User Drop-off and Abandonment Patterns in the Bus Ticket Booking App</h4>
+
+<p>The dataset contains a total of 44,031 events recorded from 499 users between December 24, 2025, and January 20, 2026. The analysis focuses on user drop-off at various stages of the booking flow.</p>
+
+<h4>Drop-off Analysis</h4>
+<p>The computed drop-offs between stages are as follows:</p>
+<ul>
+  <li><strong>App Start to Search:</strong> 95 users lost (19.8%)</li>
+  <li><strong>Search to Results:</strong> 5 users lost (1.3%)</li>
+  <li><strong>Results to Seat Selection:</strong> 173 users lost (45.6%)</li>
+  <li><strong>Seat Selection to Payment Initiation:</strong> 170 users lost (82.5%)</li>
+  <li><strong>Payment Initiation to Payment Success:</strong> 27 users lost (75.0%)</li>
+</ul>
+
+<h4>WORST TRANSITION</h4>
+<p>The worst transition occurs between <strong>Seat Selection and Payment Initiation</strong>, where 170 users were lost, representing a drop-off rate of <strong>82.5%</strong>.</p>
+
+<h4>REVENUE IMPACT</h4>
+<p>Estimating potential bookings lost at the worst transition (Seat Selection to Payment Initiation), if we assume each booking is worth an average of $50, the revenue impact can be calculated as follows:</p>
+<p><strong>Potential bookings lost:</strong> 170 users * $50 = $8,500.</p>
+
+<h4>ROOT CAUSES</h4>
+<p>Possible UX/technical reasons for the high drop-off at the Seat Selection stage include:</p>
+<ul>
+  <li><strong>Complexity in Seat Selection:</strong> Users may find the seat selection interface confusing or cumbersome, leading to frustration.</li>
+  <li><strong>Technical Issues:</strong> There may be performance issues or bugs that prevent users from completing the seat selection process smoothly.</li>
+  <li><strong>Lack of Clear Information:</strong> Insufficient information about seat options or pricing may deter users from proceeding to payment.</li>
+</ul>
+
+<h4>FIXES</h4>
+<p>To address the high drop-off rate, the following UX improvements are recommended, ranked by expected impact:</p>
+<ul>
+  <li><strong>Simplify the Seat Selection Interface:</strong> Redesign the interface to make it more intuitive and user-friendly, reducing complexity.</li>
+  <li><strong>Enhance Performance and Stability:</strong> Conduct thorough testing to identify and fix any technical issues that may hinder the seat selection process.</li>
+  <li><strong>Provide Clear Information:</strong> Ensure that users have access to detailed information about seat options, including pricing and amenities, to facilitate informed decision-making.</li>
+</ul></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="friction_points">
+            <div class="metric-header">
+                <h2>Friction Point Analysis</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="79920b9b-4883-4b5f-aaaf-13651646a631" class="plotly-graph-div" style="height:480px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("79920b9b-4883-4b5f-aaaf-13651646a631")) {                    Plotly.newPlot(                        "79920b9b-4883-4b5f-aaaf-13651646a631",                        [{"marker":{"color":[37.5,5.6,5.0,2.2,1.7,0.8,0.6,0.4,0.4,0.3],"colorbar":{"tickfont":{"color":"#94a3b8"},"title":{"font":{"color":"#94a3b8"},"text":"Score"}},"colorscale":[[0,"#fbbf24"],[0.5,"#f97316"],[1,"#ef4444"]]},"orientation":"h","text":["17.5% rep | 7.5x","3.3% rep | 4.5x","5.7% rep | 1.4x","1.9% rep | 2.2x","1.1% rep | 3.6x","0.6% rep | 3.0x","0.3% rep | 5.9x","0.4% rep | 1.9x","0.2% rep | 7.9x","0.2% rep | 2.6x"],"textfont":{"color":"#f8fafc","size":10},"textposition":"auto","x":[37.5,5.6,5.0,2.2,1.7,0.8,0.6,0.4,0.4,0.3],"y":["select_seat","_location_elastic-town-search","Onboarding_backpressed","boarding_change_pickup","booking_page_dropoff","_ticket_v2","_location_special-town-search","Onboarding_Language","_user","_ticket"],"type":"bar"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"Friction Points"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"yaxis":{"autorange":"reversed"},"margin":{"l":200,"t":50},"paper_bgcolor":"#0f172a","plot_bgcolor":"#1e293b","height":480},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Friction Point 1: select_seat</h4>
+<p><strong>WHAT IT MEANS:</strong> Users are repeatedly selecting seats, likely due to the seat map being unresponsive or confusing. This could indicate that users are unsure if their selection has been registered, prompting them to tap multiple times.</p>
+<p><strong>SEVERITY:</strong> This issue affects 1234 total events, with a significant number of users and sessions impacted. The exact number of users is not provided, but the total events suggest a widespread problem.</p>
+<p><strong>PROPOSED FIX:</strong> Improve the responsiveness of the seat selection interface by providing immediate visual feedback when a seat is selected, such as highlighting the selected seat and displaying a confirmation message.</p>
+<p><strong>EXPECTED IMPACT:</strong> This fix could reduce the repeat rate of the select_seat event by at least 50%, leading to a smoother user experience and potentially increasing overall user satisfaction.</p>
+
+<h4>Friction Point 2: _location_elastic-town-search</h4>
+<p><strong>WHAT IT MEANS:</strong> Users are frequently re-entering location searches, indicating that the search results may not be relevant or satisfactory. This could lead to frustration as users attempt to find their desired locations.</p>
+<p><strong>SEVERITY:</strong> This event has a total of 2149 occurrences, suggesting that many users are experiencing this issue, although the exact number of affected users is not specified.</p>
+<p><strong>PROPOSED FIX:</strong> Enhance the search algorithm to provide more relevant results based on user input, and consider adding autocomplete suggestions to help guide users towards valid entries.</p>
+<p><strong>EXPECTED IMPACT:</strong> By improving search relevance, we could expect a reduction in repeat searches by at least 30%, leading to a more efficient booking process.</p>
+
+<h4>Friction Point 3: Onboarding_backpressed</h4>
+<p><strong>WHAT IT MEANS:</strong> Users are frequently pressing the back button during the onboarding process, which may indicate confusion or dissatisfaction with the onboarding flow. This suggests that users are not finding the information they need or are unsure of how to proceed.</p>
+<p><strong>SEVERITY:</strong> This event has a total of 87 occurrences, indicating that while the volume is lower than the previous points, it still reflects a significant number of users facing this issue during onboarding.</p>
+<p><strong>PROPOSED FIX:</strong> Revise the onboarding process to make it clearer and more intuitive, possibly by simplifying the steps or providing clearer instructions on what to expect next.</p>
+<p><strong>EXPECTED IMPACT:</strong> Improving the onboarding experience could reduce the back press rate by at least 40%, leading to higher completion rates for new users.</p></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="session_metrics">
+            <div class="metric-header">
+                <h2>Session Behaviour Metrics</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="0c5a9ef1-4033-410e-88dc-6d1451f8697f" class="plotly-graph-div" style="height:560px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("0c5a9ef1-4033-410e-88dc-6d1451f8697f")) {                    Plotly.newPlot(                        "0c5a9ef1-4033-410e-88dc-6d1451f8697f",                        [{"marker":{"color":"#818cf8"},"nbinsx":40,"opacity":0.85,"x":[606018.0914999996,132.467,90.853,101.578,329.357,138.487,162.167,82588.72,142.472,590.962,109.954,257.233,90.214,233.395,96.153,163489.943,278.318,116.574,108.716,52.418,146.093,194948.134,1804.486,339.938,307.722,108437.705,259.847,42.795,190.228,137.727,134.055,599.671,4091.395,32946.04,161.489,14055.326,316.313,25974.894,905.966,60563.82,231.225,100.488,104.627,3887.776,112.72,35.532,273.811,606018.0914999996,96.342,207.01,604845.213,116.015,327449.932,541.19,10594.616,217.217,122.077,912.477,120.363,71.019,65.301,190695.921,182.031,701.811,278.385,178.635,166.025,90.875,606018.0914999996,174662.547,9782.043,423.005,142.661,388.088,93158.354,170.376,36.566,80.185,190.808,606018.0914999996,129.334,111.775,247.513,72.138,142.402,478.687,130.96,374.32,217.338,606018.0914999996,123.476,6424.655,247.315,390521.185,60.453,121.078,6527.666,256035.03,162.166,229.151,110.939,85280.672,5789.785,265.469,1992.768,765.797,173.775,1583.948,590082.169,584.506,539937.562,497.14,134.889,212.623,46.132,262.635,505.216,52.456,71.365,1997.201,186.367,50.036,188.987,254.175,232.303,46.802,788.801,139.87,439.181,235.082,40777.508,214.746,221.527,189.104,403.138,53.334,422.72,122.208,105.755,162.797,96.594,61007.572,606018.0914999996,1683.454,173.264,377.687,178.778,224.525,323705.739,53.762,606018.0914999996,557.341,261611.761,524.878,207762.196,511.611,79.886,116.251,122.747,80.886,208.019,26603.35,350722.962,240.977,476.614,182.574,157.141,293932.603,1320.465,113.121,72214.42,65.057,63.44,111.169,606018.0914999996,276.457,1026.846,223.582,160.71,522.703,5306.411,302.755,35.025,80198.277,107.602,176.287,58.154,207.067,98.567,90.914,49.301,160.578,247.904,87016.255,20981.685,971.573,124.502,154.536,553.798,7422.43,5118.124,6085.753,606018.0914999996,6341.703,121.294,41208.898,206.929,363.606,150547.779,120.179,646.584,183.445,86.935,739.799,101.051,425.853,12775.325,186.201,578.301,561944.409,73.141,112.077,118.655,224.265,235.981,180894.449,138.043,4060.596,113.561,5672.04,447.927,177.185,218.272,31441.364,658.842,159.677,74.886,443.641,240875.133,241.859,386.686,44142.557,21645.444,114.706,131.664,80.71,606018.0914999996,113123.284,606018.0914999996,21.993,84.846,177.665,158.406,238540.045,261.103,117.032,224.704,1265.993,91040.262,192.095,70.972,42.918,217.097,202.536,606018.0914999996,606018.0914999996,129.247,59.311,92.542,165.695,94786.126,480.189,606018.0914999996,577.153,131739.258,38152.019,416841.12,158172.493,262.009,252353.182,63.256,116.221,207.62,245.816,1233.784,220.932,45.269,606018.0914999996,92.411,160.337,218.43,405.473,244808.857,341.327,27986.485,108.807,7531.94,104811.235,203.045,120.153,27460.318,298.327,125.802,108.309,505.707,148409.116,298.3,45779.697,454.845,77594.591,290.508,382.607,260.638,132.524,352498.784,156.962,96989.306,44.86,1026.79,498.491,350.871,9597.374,126736.308,152.071,62.516,201.383,245.374,1472.776,409.001,260345.504,218.637,139.686,306.166,104706.628,166690.332,189.761,712.709,176.943,311.032,346.294,683.339,219.189,7949.065,168660.568,606018.0914999996,1012.872,74.141,287.459,606018.0914999996,183.647,118.316,57.693,74.978,748.022,478.95,4004.489,44.854,84.295,15971.362,211.25,348.246,298.015,32849.245,339.54,71547.601,16907.724,102540.388,120.386,5105.556,241.525,606018.0914999996,141.301,172.509,254.883,812.264,305.806,101.615,1268.792,64.744,220.841,34.23,170.153,65.656,70.478,20231.972,13276.052,157.419,102246.357,256.648,40.535,102.044,226.207,257.499,414.61,471.271,104457.107,46.098,95.718,55.239,1890.737,186.649,437200.861,117.6,864.826,110374.464,606018.0914999996,49.24,177.536,40.498,606018.0914999996,28.479,160.894,463.218,92.358,63136.106,176076.775,381.608,242.878,414.165,5214.846,821.588,278.119,189246.523,228.951,921.262,85.925,44.699,232.222,96518.543,833.225,96.641,65.591,226.152,4585.351,268.645,10235.038,29.759,233.048,576710.627,1210.107,157.316,182.547,418.568,132.875,165.989,606018.0914999996,22338.182,353.4,2467.114,166.108,381.482,606018.0914999996,91.885,470.391,285.639,266.119,130.216,225.83,20914.191,660.679,94476.834,111.089,267308.774,19918.663,6613.047,194.839,143.245,229.18,397293.174,105.137,69945.714,323.628,159130.045,133.084,61279.039,602751.722,75993.606,440.904,214.87,348620.226,87629.898,165.595,265.526,141057.149,59780.741,431.689,51.204,606018.0914999996,8346.114,249.586,446.146,263.128,217894.958,375.842,51159.368,606018.0914999996,228638.579,606018.0914999996,276.717],"type":"histogram","xaxis":"x","yaxis":"y"},{"box":{"visible":true},"marker":{"color":"#7c3aed"},"meanline":{"visible":true},"y":[238,60,27,43,18,81,56,56,29,116,33,74,38,74,46,238,32,46,26,25,49,87,66,27,105,51,56,33,42,44,44,57,100,103,59,103,51,112,147,93,63,27,41,51,29,20,142,86,17,52,238,38,40,117,65,87,27,73,31,29,38,238,43,66,64,33,38,35,238,215,33,113,37,111,82,47,25,62,59,105,51,70,57,45,43,92,44,32,38,238,42,81,48,53,26,34,48,238,74,36,49,163,233,63,107,49,37,42,119,85,186,57,40,65,23,148,70,17,27,49,68,25,49,99,60,28,80,54,203,67,92,71,107,70,42,27,42,35,71,43,26,47,231,69,66,53,43,47,94,25,36,64,238,79,35,20,35,26,25,27,50,144,132,56,94,45,52,113,97,41,150,35,17,42,238,33,77,53,74,43,80,51,25,103,41,18,33,71,32,20,31,49,45,84,27,63,43,60,70,114,54,179,114,54,48,84,55,87,50,41,52,62,60,50,27,99,135,42,119,238,31,56,24,57,68,120,49,48,47,61,84,38,43,238,84,38,24,95,72,59,107,34,56,26,35,29,31,143,80,26,40,55,78,124,62,27,58,100,197,32,25,26,47,30,60,63,53,35,23,51,238,86,168,43,54,141,124,88,68,238,36,27,28,90,17,54,34,139,31,68,60,203,238,123,107,21,67,60,100,46,60,75,42,33,71,238,65,153,66,46,57,40,36,64,158,43,129,30,38,84,50,104,173,51,39,50,36,115,118,93,45,34,60,238,238,69,51,60,48,64,125,51,89,170,75,135,23,59,238,32,41,34,16,106,104,71,29,45,238,57,98,30,93,73,88,100,177,40,66,47,238,52,47,46,66,32,29,95,52,53,27,59,31,28,42,112,37,47,31,24,28,64,73,55,86,112,29,33,25,16,45,89,42,58,238,238,30,40,36,238,25,25,76,24,105,76,148,48,77,49,103,60,103,51,139,17,17,31,40,74,29,26,35,73,70,164,23,52,111,79,59,65,112,36,49,220,104,49,71,35,35,238,34,85,112,79,45,37,125,88,97,59,238,48,51,37,33,99,59,41,88,48,53,43,52,238,86,47,101,186,102,44,40,76,204,44,24,174,59,47,69,44,200,68,91,53,126,207,62],"type":"violin","xaxis":"x2","yaxis":"y2"},{"marker":{"color":"#22d3ee"},"nbinsx":25,"opacity":0.85,"x":[31,35,21,30,11,21,32,35,21,30,21,36,30,28,28,64,22,29,21,21,34,35,28,22,36,21,30,28,21,28,28,34,29,28,35,28,35,37,32,35,29,21,30,28,21,16,36,35,17,36,49,28,28,55,20,34,21,34,21,21,30,57,28,28,34,21,28,28,55,35,21,36,27,29,36,30,21,36,28,48,35,35,30,30,34,34,21,21,27,54,34,35,32,28,20,20,28,50,32,29,34,58,50,29,35,35,29,28,49,52,38,35,31,34,20,36,29,16,21,35,31,21,36,37,35,21,30,28,57,29,48,35,38,29,35,21,22,29,50,28,21,28,33,35,28,37,27,35,35,21,21,34,58,33,28,17,28,21,21,21,28,46,35,43,30,28,36,48,29,34,36,28,17,34,53,21,33,28,35,27,48,22,21,57,21,17,28,28,21,16,26,28,23,35,20,30,35,28,30,30,28,51,32,22,28,32,36,37,28,31,30,30,28,28,21,31,49,34,31,49,24,34,21,28,36,57,33,30,28,23,29,28,21,60,35,28,21,26,33,30,36,21,35,21,28,21,18,43,35,21,28,30,35,37,30,21,30,35,58,21,21,21,28,21,20,36,30,28,20,30,59,30,34,30,30,57,35,33,36,60,28,21,21,38,16,34,28,36,21,46,28,54,44,46,34,17,30,28,57,28,21,45,26,22,30,56,30,35,35,27,30,30,28,30,38,28,46,21,21,35,30,35,37,30,31,35,28,34,41,39,30,25,30,37,48,35,34,34,33,50,35,28,46,37,35,48,20,44,61,24,29,28,16,51,31,50,21,35,58,35,37,21,50,45,35,33,56,28,27,27,55,35,30,27,38,21,22,30,35,22,21,30,21,21,21,38,28,28,21,21,21,34,55,35,49,35,20,21,21,16,35,33,28,22,36,50,24,30,28,64,21,21,24,20,51,28,39,27,30,30,54,28,36,21,51,16,16,21,23,21,21,21,21,28,37,36,20,28,36,30,28,35,30,28,21,36,36,28,36,28,27,58,26,28,34,34,35,21,48,33,36,34,40,34,33,28,26,36,35,34,30,22,31,35,30,39,31,22,35,34,47,35,28,28,49,34,21,33,34,35,37,35,61,31,49,21,28,30,35],"type":"histogram","xaxis":"x3","yaxis":"y3"},{"marker":{"color":"#f59e0b"},"nbinsx":20,"opacity":0.85,"x":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"type":"histogram","xaxis":"x4","yaxis":"y4"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"xaxis":{"anchor":"y","domain":[0.0,0.45]},"yaxis":{"anchor":"x","domain":[0.56,1.0]},"xaxis2":{"anchor":"y2","domain":[0.55,1.0]},"yaxis2":{"anchor":"x2","domain":[0.56,1.0]},"xaxis3":{"anchor":"y3","domain":[0.0,0.45]},"yaxis3":{"anchor":"x3","domain":[0.0,0.44]},"xaxis4":{"anchor":"y4","domain":[0.55,1.0]},"yaxis4":{"anchor":"x4","domain":[0.0,0.44]},"annotations":[{"font":{"size":16},"showarrow":false,"text":"Duration (s)","x":0.225,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Events\u002fSession","x":0.775,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Depth","x":0.225,"xanchor":"center","xref":"paper","y":0.44,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Sessions\u002fUser","x":0.775,"xanchor":"center","xref":"paper","y":0.44,"yanchor":"bottom","yref":"paper"}],"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"Sessions: 499 | Bounce: 0.0%"},"font":{"family":"Inter,sans-serif","size":11,"color":"#cbd5e1"},"paper_bgcolor":"#0f172a","plot_bgcolor":"#1e293b","height":560,"showlegend":false},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>SESSION HEALTH</h4>
+<p>The overall assessment of session quality indicates concerning metrics. The average session duration is 80230.4 seconds, which is significantly higher than the healthy benchmark of 3-10 minutes (180-600 seconds). The average depth of 31.8 unique event types per session is well above the recommended 5+, suggesting users are engaging deeply with the app. However, the bounce rate stands at 0.0%, which is below the good threshold of 30%. This indicates that while users are not bouncing, the extremely high average duration suggests potential issues with session management or user experience.</p>
+
+<h4>ENGAGEMENT DEPTH</h4>
+<p>The event depth distribution reveals that users are highly engaged with the app, as indicated by the average depth of 31.8 unique event types. This suggests that most users are exploring various features rather than leaving after just 1-2 actions. The high engagement depth indicates a positive interaction with the app, but it raises questions about session management and whether users are finding what they need efficiently.</p>
+
+<h4>BOUNCE ANALYSIS</h4>
+<p>The bounce rate is recorded at 0.0%. This indicates that no sessions ended with 2 or fewer events, which is unusual for a booking app. Possible causes for this could include slow load times or poor onboarding processes that keep users engaged longer than necessary without completing their intended actions. The lack of bounces may also suggest that users are entering the app but not finding a clear path to booking, leading to prolonged sessions without conversions.</p>
+
+<h4>SESSION TARGETS</h4>
+<p>Based on the current data and industry standards, the product team should aim for specific session duration and depth targets. Recommended targets are:</p>
+<ul>
+    <li><strong>Session Duration:</strong> Aim for an average duration of 3-10 minutes (180-600 seconds) to ensure users are not overwhelmed or confused.</li>
+    <li><strong>Session Depth:</strong> Maintain an average depth of 5+ unique event types to encourage exploration while ensuring users can navigate efficiently.</li>
+</ul></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="retention_analysis">
+            <div class="metric-header">
+                <h2>Cohort Retention Heatmap</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="fa0d08f7-af31-4795-bfcd-c860f25aad76" class="plotly-graph-div" style="height:380px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("fa0d08f7-af31-4795-bfcd-c860f25aad76")) {                    Plotly.newPlot(                        "fa0d08f7-af31-4795-bfcd-c860f25aad76",                        [{"colorbar":{"tickfont":{"color":"#94a3b8"},"title":{"font":{"color":"#94a3b8"},"text":"Retention %"}},"colorscale":[[0,"#1e1b4b"],[0.3,"#4338ca"],[0.6,"#818cf8"],[1,"#c4b5fd"]],"text":[["100.0%","7.6%","1.7%"],["100.0%","4.1%","0.0%"],["100.0%","0.0%","0.0%"],["100.0%","71.4%","42.9%"]],"textfont":{"color":"#f8fafc","size":12},"texttemplate":"%{text}","x":["Week 0","Week 1","Week 2"],"y":["W1 (n=118)","W2 (n=220)","W3 (n=154)","W52 (n=7)"],"z":[[100.0,7.6,1.7],[100.0,4.1,0.0],[100.0,0.0,0.0],[100.0,71.4,42.9]],"type":"heatmap"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"Cohort Retention | W1: 5.2%"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"margin":{"l":130,"t":50},"paper_bgcolor":"#0f172a","plot_bgcolor":"#0f172a","height":380},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Insights from the Bus Ticket Booking App Dataset</h4>
+
+<p>The analysis of the dataset has provided valuable insights into user retention across different cohorts. Below are the findings based on the retention matrix and dataset summary.</p>
+
+<h4>1. BEST COHORT</h4>
+<p>The cohort from Week 52 (W52) has the strongest retention, with a Week 1 retention rate of 71.4% (n=7). This high retention could be attributed to several factors:</p>
+<ul>
+  <li><strong>Seasonality:</strong> Week 52 coincides with the holiday season, which typically sees increased travel activity.</li>
+  <li><strong>Marketing Campaigns:</strong> There may have been targeted promotions during this period to encourage bookings.</li>
+  <li><strong>User Experience Improvements:</strong> If any product changes were implemented prior to this cohort, they may have positively influenced user satisfaction.</li>
+</ul>
+
+<h4>2. WORST COHORT</h4>
+<p>The cohort from Week 2 (W2) shows the fastest drop-off, with a Week 1 retention rate of 4.1% and a Week 2 retention rate of 0.0%. This significant decline indicates that users are not finding enough value to return after their initial experience.</p>
+
+<h4>3. OVERALL TREND</h4>
+<p>Retention appears to be declining across successive cohorts. The Week 1 retention rates for W1 (7.6%) and W2 (4.1%) show a downward trend, suggesting that recent changes or user engagement strategies may not be effective in retaining users over time.</p>
+
+<h4>4. RETENTION STRATEGIES</h4>
+<p>To improve Week 1 retention, the following strategies are recommended:</p>
+<ul>
+  <li><strong>Enhance Onboarding Experience:</strong> Given the low retention in W1 (7.6%), improving the onboarding process could help users understand the app's value proposition better and encourage them to return.</li>
+  <li><strong>Targeted Re-engagement Campaigns:</strong> Implementing campaigns specifically aimed at users who drop off after their first use could help bring them back. The stark drop in W2 retention (0.0%) indicates a need for strategies to re-engage users who may have had a poor initial experience.</li>
+</ul></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="user_segmentation">
+            <div class="metric-header">
+                <h2>User Segmentation</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="7467440a-b305-4d01-af17-24475c3c62d2" class="plotly-graph-div" style="height:500px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("7467440a-b305-4d01-af17-24475c3c62d2")) {                    Plotly.newPlot(                        "7467440a-b305-4d01-af17-24475c3c62d2",                        [{"marker":{"color":"#6b7280","opacity":0.7,"size":6},"mode":"markers","name":"Outliers (34)","x":[3.1617485719893503,2.054074986982643,6.025940957596614,7.426431008221231,4.812090124714037,2.1244591266093806,5.807084345695752,1.8683432180990065,4.41320492332585,-0.15266209145863183,4.744030743317622,9.89193160454293,1.6649888172370986,3.8503398611678334,0.31674208896481765,1.3157617797253534,0.8964664726557169,0.818206855624786,8.759500018746111,2.3345689228441255,4.424132344020024,2.820540623758791,1.0903864139645485,7.991067533168928,5.984756045282467,4.809298425085964,10.137867865920253,2.776940725436452,4.3354340155193,3.44751526264988,16.3679831540976,2.9922384357174954,1.6263040197508776,2.972532827875344],"y":[3.003143184333377,4.514532442531516,0.6293775557520855,-1.8568328788291686,1.4559012795440582,2.5355693084357878,1.6519638074085952,1.0649898160856286,6.446781686164394,2.7165257708260007,-0.9003332380582215,-0.40213567751654655,2.483834117172276,0.7293203510161134,4.606338865354323,2.7674362550426213,3.7793261235952436,2.4000799310483236,-2.6138235220529853,2.3043063774736505,-1.2768373429521604,4.381508356829007,2.4239934357846384,0.16466779335338075,1.5790494802134132,4.267838160924008,1.0897227186335325,1.7751214252793965,0.6974836678309875,-0.0118429981447721,-1.8768548339950237,4.091645483273942,6.207592303913249,3.452973225933094],"type":"scatter"},{"marker":{"color":"#818cf8","opacity":0.7,"size":6},"mode":"markers","name":"Segment 0 (465)","x":[-0.2729583554617711,-1.5102841126934767,-0.851133107814297,-1.6351418029095632,0.004757673334996228,-0.4008185334318395,-0.39267227597047966,-1.380923555612247,0.643875397202915,-1.164325833466076,0.08135835824643423,-1.0818630380815373,-0.016187100613177508,-0.7214958593228293,3.4000488211604347,-1.241033880058605,-0.725098948971486,-1.581282900036535,-1.6564940265812216,-0.6333203456255004,0.5696841253766497,-0.175580496799647,-1.5475859159551637,0.6247652900402959,-0.42666930440432604,-0.40835554134022733,-1.3264484850596083,-0.8075634738876841,-0.7939898371820701,-0.7939898371820701,-0.3644061301966819,0.41293847851120863,0.4336641573132995,-0.301833750788541,0.4336641573132995,-0.5602171182132878,0.7474678620497102,1.0537059736505994,0.4208708294214643,-0.2342172284163973,-1.5102841126934767,-0.9383702728792386,-0.5560571866808357,-1.380923555612247,-1.8144480989840046,1.101321259301935,-2.218496645134317,-0.5244139645311021,-1.05359516277608,-0.5843556366765226,1.2229491099608498,-0.26409029817136936,0.3017696175290471,-1.5102841126934767,0.03441510700720454,-1.2663061857367184,-1.380923555612247,-1.0818630380815373,-0.8333960805129119,-0.175580496799647,-0.17280921091336462,-1.164325833466076,-1.05359516277608,-1.2097249455832653,2.0732121727554036,-1.164325833466076,0.7378229550088486,-1.087292146857451,0.5599680894397109,0.3680858747777757,-0.6935081344909294,-1.6564940265812216,-0.21249214565444463,-0.3376910416715627,-0.5602171182132878,-0.02000928540791685,-0.37948014601345736,-0.7702144515517989,-0.8845009928162532,0.3850676757392789,-0.743494174431701,-1.21426292480099,-1.0394612251233513,-0.9323319145503528,0.20916093995234725,-0.6655204096590294,0.004711576549748813,-1.539768757573219,-1.0960424652768046,-0.6511080510644028,3.927158127935213,0.03258562881662838,-1.17392179190108,-0.6333203456255004,1.9443620290158194,2.463279119286894,-0.2342172284163973,0.6334649303221322,-0.6348172656733426,-1.1197723613645372,-0.8749084934445683,0.5519552325438387,2.383053157763431,-0.3616907110428953,-0.996122793064438,-0.14814615478822346,-1.7759329852113515,1.1713713208226488,-0.08263753154855354,-2.134859110654713,-1.5102841126934767,-0.6348172656733426,-0.1054711094831185,-1.6564940265812216,-0.6384203553219993,0.5532183084717401,-0.2729583554617711,-1.4434976645520476,0.11826654803791277,-0.46943100070052596,2.3742462498534884,-0.14609585191990487,0.6337005039737325,0.002547601116409871,0.6963715974046668,-0.08263753154855354,-0.940147343400638,-1.5102841126934767,-0.817485072338784,-1.2301773920384371,0.16754289487125953,-0.8333960805129119,-1.581282900036535,-0.6863019551936161,-0.042566171932243574,-0.175580496799647,-0.4886108108489169,-0.8255806516626265,-0.7157359219358411,0.8127930593755206,-1.6564940265812216,-0.17280921091336462,0.14176697178960534,-0.9592690440951502,-1.879130107056279,-1.2097249455832653,-1.581282900036535,-1.6564940265812216,-1.5102841126934767,-0.5870387516084201,1.3863123535707098,1.4603017315145024,-0.36884275313937226,0.34560383614428153,-0.7566897634520424,-0.5244139645311021,1.377770493176046,0.37054185414800134,-0.9801628362844521,1.1933172282623439,-1.2097249455832653,-2.218496645134317,-0.9323319145503528,-1.164325833466076,0.1029717075433951,-0.4962002264264815,0.06811209108857559,-0.8255806516626265,0.37565488328669844,-0.5512880055954114,-1.6564940265812216,1.0199981865693837,-0.8406512084160829,-2.0927374481700847,-1.3264484850596083,-0.0733269121820856,-1.21426292480099,-1.8144480989840046,-1.4043733012264223,-0.6180203165360042,-0.726037297603873,0.3894225326644985,-1.4729823094317898,-0.22728947006098182,-0.8923164216665384,-0.31302798554642175,-0.07360360359232374,0.6198233201624056,-0.46943100070052596,1.9345339559925347,-0.4772988372199881,-0.6511080510644028,0.2181372716444217,-0.4230445913450918,0.35203926700669513,-0.4618108008643626,-0.9482918713303384,-0.5259632922481212,-0.25195252618612296,-0.31302798554642175,-0.5870387516084201,-1.5102841126934767,0.43793582231074335,1.3451970131725812,-0.9323319145503528,0.7037306279256097,-1.348725221110378,-0.3953876951242663,-1.7380236619283518,-0.38701715392184494,-0.05608913050034047,1.5675682053376623,-0.629717255976844,-0.6583142303617162,-0.6863019551936161,-0.3187913819967291,0.17207996136840256,-1.05359516277608,-0.7744757393592854,3.406920669093436,0.2641945819204409,-1.05359516277608,-1.7380236619283518,0.28568927962577195,0.25328019401476315,-0.3259416945615463,0.6551358758832485,-1.1186010813327907,-0.39267227597047966,-1.581282900036535,-1.2097249455832653,-1.380923555612247,1.419758241905463,-1.581282900036535,-0.9600394889086953,-0.4351247670661829,0.14991495878262473,1.159085582587397,-0.25195252618612296,-1.5102841126934767,-0.35271092028750184,0.53032713427302,2.4658382718436496,-1.21426292480099,-1.6564940265812216,-1.581282900036535,-0.6863019551936161,-1.3225617858740755,-0.4949817273205369,-1.2097249455832653,-1.7759329852113515,-0.5569448571757055,0.2199091535708426,-0.851133107814297,-0.34087838124970965,1.6307380311985131,1.3619872537516506,0.4278835092363151,-0.05608913050034047,-1.1555755150467226,-1.5102841126934767,-1.4434976645520476,0.4224253457334619,-2.134859110654713,-0.45945699458024936,-1.2680867153214368,-1.2663061857367184,0.04056865786440128,-0.31302798554642175,2.2839593779603664,3.416238328775075,1.1063853398347743,0.611793984761016,-1.787069623705077,-0.13706192396367506,-0.18780003480236418,0.9607522053996612,-0.7214958593228293,-0.35099144603025767,0.21470697078823137,-0.8550652965423687,-1.1889906191228767,-0.053152886668811405,3.7303593731805567,-0.18217569701232847,1.1992997198587338,-0.11444917070685252,-0.7157866000733583,-0.37948014601345736,-0.9840950250125238,-1.1555755150467226,-0.20473258353665513,1.8358854001236586,-0.8333960805129119,1.314300369704432,-1.3225617858740755,-0.9504452600053511,0.2641945819204409,-0.5900325917041043,0.5889621363581107,1.5936471449244167,-0.5569448571757055,-1.046059884399352,-0.5975171919433151,-1.1555755150467226,0.7206393105279398,0.9210510626214045,0.8684952766924015,-0.7702144515517989,-1.2025170367542926,-0.3012786384364052,2.749994954906506,2.8388221396372173,-0.042566171932243574,-0.5608263677662599,-0.27988611381718653,-0.6691234993076858,-0.04932805962183095,0.873101489295675,-0.5560571866808357,0.539537310085035,1.5617813685652815,1.319313728409836,-1.7759329852113515,-0.2584394519971316,-1.2903634513722062,-0.9263425048273243,-1.2680867153214368,-2.266936816421389,0.951324663973223,0.5085968629160887,0.16754289487125953,-1.380923555612247,-0.8008669173999682,2.766280473203973,-0.3616907110428953,0.5369799307498567,-1.3225617858740755,0.6890684336162197,0.1653808585379491,0.335466601610418,0.49119758235241606,2.1819756103163233,-0.9600394889086953,-0.18461442475587683,-0.6805926959441451,-0.5250232140840746,-0.6935081344909294,-0.7157866000733583,-0.0894535564389772,-1.21426292480099,-1.4140130196723055,0.35973604426535066,-0.5250232140840746,-0.5019618933451291,-1.5102841126934767,-0.3259416945615463,-1.2663061857367184,-1.4434976645520476,-0.8075634738876841,0.7691388076108265,-1.103532254110994,-0.5610740044495586,-1.2663061857367184,-1.7380236619283518,-1.4434976645520476,-0.17280921091336462,0.2831003429108348,-0.423653840898064,0.5263486391913318,0.8293539216715352,-1.3499402611530034,-1.164325833466076,-1.6564940265812216,-2.266936816421389,-0.8008669173999682,0.945033689934429,-0.8749084934445683,-0.38707129112268135,2.847635668725592,-1.4112993300501784,-0.9840950250125238,-1.1555755150467226,-1.6564940265812216,-1.6564940265812216,-0.03248307459921633,-1.6901910106625926,0.9329801166505252,0.2709578955203334,1.249021175110884,-0.6475049614157465,0.0632329060698191,-0.623120326232503,0.9591976890876636,-0.31302798554642175,0.8448506056854587,-0.5518972551483835,1.4492800759807187,-2.134859110654713,-2.134859110654713,-1.2663061857367184,-0.7746726979050667,-0.10259246191574488,-1.380923555612247,-1.581282900036535,-1.0728763291995056,-0.03663781753668982,0.00016474010535721273,1.344832410739394,-1.7759329852113515,-0.5250756217532514,1.4630324128318704,0.09992200071521491,-0.3376910416715627,-0.13911222683199365,0.5936650735210818,-1.1555755150467226,-0.6033295369994802,0.610633081919227,-0.6180203165360042,0.013687698673454082,-1.2097249455832653,-1.1892724991280934,-1.2250756528102789,0.17296590233161288,0.680348855765547,0.15711940854827838,-0.8008669173999682,-0.989851503336193,1.1822039864007738,0.3026555584922575,0.6285108974125434,-0.306655339543142,-0.6706204193555281,-0.5593294477184177,-1.103532254110994,-1.2813312529476362,0.5336535325114383,0.19907805218768934,-0.9801628362844521,0.2523859090146094,-0.631595682773278,-0.36914452702350714,-0.8923164216665384,-0.5259632922481212,0.23736775993033005,-0.6604710781000479,0.5444593423940891,2.0143209300186347,0.9249153215852814,-0.8444854999324389,-0.9600394889086953,0.14572994477627585,2.143401127057938,-0.8387762406829679,-1.7380236619283518,-0.306655339543142,-0.7157359219358411,-0.022392146418969534,-0.8444854999324389,2.7132188708399645,-0.1054711094831185,0.632814563010522,0.96914362317053,-0.21941990400986],"y":[-0.36456331675020326,0.26415365632343013,-0.132522590560265,0.7012350200832882,0.18895070167733893,-0.23290547348218374,-0.35917005116889167,0.26310280867541314,-0.24728285815296683,0.2600036678383859,-0.42712385171261924,-0.12770109125003734,-0.09221371318851945,-0.05131890066520915,-1.5835901787440148,0.21809179316081087,-0.09355671005859409,0.2645294633162896,0.26480552575504984,-0.3083169195795306,0.29663303166893296,-0.07953203549800901,0.22111789049725072,-0.4780233505293477,0.5888359021645116,-0.14877896063476156,-0.03890269592353648,0.24993851977799558,-0.04892150153685129,-0.04892150153685129,-0.3184052388634588,-0.17768680229657463,-0.14121453564738673,-0.3631900642163505,-0.14121453564738673,-0.35285238354717413,-0.5316693296334897,-0.3856503123794449,-0.4160149404444522,-0.11690200313409081,0.26415365632343013,-0.13047429737125477,-0.05768644056397629,0.26310280867541314,0.4821127512354934,-0.542847804132854,0.43656373016326727,-0.3962140840891635,-0.0427267496927709,1.0094437731852384,-1.2894401732983458,0.25764905654683734,-0.36434068119875895,0.26415365632343013,-0.34187344771659256,0.26170285508804847,0.26310280867541314,-0.12770109125003734,-0.04779761038824682,-0.07953203549800901,-0.32826736798567624,0.2600036678383859,-0.0427267496927709,-0.040252777233851456,0.06893966692708432,0.2600036678383859,-0.4918022183149507,0.0006848231262681194,-0.19683223460997734,-0.08839925738078984,-0.13701815515468274,0.26480552575504984,-0.4093980143801447,-0.06897169449709621,-0.35285238354717413,-0.37914367079857497,-0.1501522131686143,-0.1347205005804242,-0.30192267862725164,-0.37265323990246285,0.24734163154143907,0.260878197601742,-0.0002395789141376732,-0.30099827658684586,-0.396344084307041,-0.22271740964415637,1.3450425256265284,0.30766497369656853,0.30171605340776236,-0.05376617207061667,-0.8321114014838076,-0.25966878245056935,-0.08361447777584083,-0.3083169195795306,-1.4934370724407808,-1.2879194200784974,-0.11690200313409081,-0.4397788531299098,-0.3505048566958659,-0.08438926298509765,-0.046723591516692045,-1.1130473521741922,1.4030363116493139,-0.36049343142569473,-0.17193732155538283,-0.32974036507362836,0.3082437996276009,-0.5535310609114039,-0.1277117055202519,0.48069668608453925,0.26415365632343013,-0.3505048566958659,-0.20844337369832297,0.26480552575504984,-0.39274266608925085,-0.509528030867133,-0.36456331675020326,0.26367810477647124,-0.1856769313341507,-0.0618061981655345,-1.5233851722606886,-0.12304335287114736,-0.9569007080687999,-0.3806665401635767,-0.5647467516133264,-0.1277117055202519,-0.3433358305343301,0.26415365632343013,0.20755109355346174,-0.08288956484363368,-1.009046964251186,-0.04779761038824682,0.2645294633162896,-0.05254253636791291,-0.37762080143357324,-0.07953203549800901,-0.4395757846311528,-0.005460056440762606,-0.3483069466757067,0.6363817725952675,0.26480552575504984,-0.32826736798567624,-0.3095209386689629,0.6624600222567286,0.4384286458076683,-0.040252777233851456,0.2645294633162896,0.26480552575504984,0.26415365632343013,-0.056363060307173175,-0.961738368503201,0.9219394444195956,-0.6958257193897294,-0.20909173808026066,-0.05009526496250539,-0.3962140840891635,0.06269462064955121,-0.1725197268769735,-0.3000738745464401,-0.5571253946889536,-0.040252777233851456,0.43656373016326727,-0.30099827658684586,0.2600036678383859,-0.3063255831078105,-0.06038307335463211,-0.3852850205356316,-0.005460056440762606,-0.9383270420264811,0.19534143757993594,0.26480552575504984,-1.3497529011832605,0.251212027757749,0.43748460237369885,-0.03890269592353648,-0.08739574370826593,0.260878197601742,0.4821127512354934,0.047671088329293274,-0.05503968005037009,0.16139301566671718,-0.049855526319053996,0.30718942214960976,-0.1588904511422274,-0.3442602325747359,-0.07044469158504828,-0.16965028125133882,-0.24373839665246677,-0.0618061981655345,-1.2315143046124504,0.19092244631607974,-0.05376617207061667,-0.2758450493645302,-0.3999847357513741,-0.48960781334447356,0.2949933394381169,-0.17286172359578866,-0.14333582277640022,-0.15741745405427532,-0.07044469158504828,-0.056363060307173175,0.26415365632343013,-0.25934287251505156,-1.0706564456802683,-0.30099827658684586,-0.29418902019545634,0.13329376948820532,-0.3170818586066557,0.2649319713626611,-0.06602570032119207,-0.4180365077996585,-0.674973644256746,-0.2660791101861458,-0.13824179085738653,-0.05254253636791291,0.13812429592178205,-0.15047817266471625,-0.0427267496927709,0.24866501179824213,-1.8208045187359307,-0.40121192606434414,-0.0427267496927709,0.2649319713626611,-0.04395749461600712,0.40430079687007636,-0.1529984627904191,-0.4814181951986988,0.2590293935209304,-0.35917005116889167,0.2645294633162896,-0.040252777233851456,0.26310280867541314,-0.4840408177406416,0.2645294633162896,-0.044625426050632154,-0.14735583582385914,-0.3915759871038371,0.15017567907048743,-0.15741745405427532,0.26415365632343013,-0.1515753379795167,-0.4278220883716065,-1.2026357518662898,0.260878197601742,0.26480552575504984,0.2645294633162896,-0.05254253636791291,0.26242776802025564,-0.14465920303320332,-0.040252777233851456,0.3082437996276009,-0.14201244251959716,-0.19561210395695564,-0.132522590560265,0.20532394417823405,-1.4134569934681367,0.9360674181445463,0.027132191250318422,-0.4180365077996585,-0.04102756244310826,0.26415365632343013,0.26367810477647124,-0.5362646140017148,0.48069668608453925,-0.31448497037009915,-0.03957773657869396,0.26170285508804847,-0.837272648279379,-0.07044469158504828,-1.3990656133789177,-0.519299699548379,-0.925169862349596,-0.39813951106112083,0.4385515615853054,-0.1649819286022343,0.28091170816024175,-1.344984803980057,-0.05131890066520915,0.2237238058571563,-0.8053956907787082,0.038051260932375736,0.21726713567450437,-0.17122302289339023,-1.3722535815305104,-0.16193618987223085,-0.5210022339791135,-0.37315193789266743,-0.009031218994774565,-0.1501522131686143,-0.1295000230537993,-0.04102756244310826,-0.16041332050722912,0.7508935464296782,-0.04779761038824682,-0.5841974857205577,0.26242776802025564,0.2547831903117609,-0.40121192606434414,-0.1407389345398437,-0.43466164998735835,-0.28871823931574964,-0.14201244251959716,-0.1710627917920267,-0.35167862012152,-0.04102756244310826,-0.41201812340082317,-0.7085109764707983,0.47114778457691464,-0.1347205005804242,0.08843237080475194,-0.1544714598783712,-0.51640454439765,-0.9142116925293138,-0.37762080143357324,-0.31071431870788857,-0.32257486874206664,-0.2649552190375413,-0.9997833024535643,-0.47113041158686414,-0.05768644056397629,-0.8686544376198193,-0.2833018025109002,-1.0291168481655784,0.3082437996276009,-0.741534946783027,0.13261872883304784,-0.0880369988696712,-0.03957773657869396,0.4796261970429586,-1.104635073696681,-0.2679546648810534,-1.009046964251186,0.26310280867541314,-0.3462087812096468,-1.6282495252374205,-0.36049343142569473,-0.5078555446709824,0.26242776802025564,-1.0419516229566281,-0.8024496966028041,-0.40775225401779797,-0.34444365967992924,-1.0839124527237112,-0.044625426050632154,-0.03759345976692205,-0.010254854697478322,-0.3540760192498779,-0.13701815515468274,-0.009031218994774565,-0.4990175373629779,0.260878197601742,0.22016678740333304,-0.21081409655346106,-0.3540760192498779,0.1923954434040318,0.26415365632343013,-0.1529984627904191,0.26170285508804847,0.26367810477647124,0.24993851977799558,-0.5733086717022786,-0.04185221992941477,0.29881386337737714,0.26170285508804847,0.2649319713626611,0.26367810477647124,-0.32826736798567624,-1.221187114312028,-0.3578466709120885,-0.9892532171164296,-0.09703424575062157,0.30598895767044376,0.2600036678383859,0.26480552575504984,0.4796261970429586,-0.3462087812096468,1.4308853040353282,-0.046723591516692045,0.1848309688560728,-0.5027949596170517,0.13386906558926348,-0.1295000230537993,-0.04102756244310826,0.26480552575504984,0.26480552575504984,0.07189638368122901,0.30821709857408897,-1.10301245977758,0.6072538584638586,-0.678149853455473,-0.011528362677231781,-0.18080908957684752,-0.13946542656009028,-1.2247351304227942,-0.07044469158504828,0.2280842936305836,0.2374795024192215,-1.1607248191565485,0.48069668608453925,0.48069668608453925,0.26170285508804847,0.5189174662025756,0.20080772188154294,0.26310280867541314,0.2645294633162896,0.25805511920347496,-0.09064097154646807,-0.4629709499836992,-0.5823356034088515,0.3082437996276009,-0.05900982082077937,1.6198307693802405,-0.18405431741504966,-0.06897169449709621,-0.37167894080471536,-0.24024380742901638,-0.04102756244310826,0.240375624318076,-0.47630099205614734,-0.05503968005037009,-0.422555243617614,-0.040252777233851456,0.0023840103759307273,0.045745710917920124,-0.11036169996092897,-0.4068011757041724,-0.3513098975689009,-0.3462087812096468,0.2559070814603654,-1.0117935188794753,-0.32422420849497163,-0.11308757210665328,-0.32115174393116425,-0.30714315615387655,-0.2685263815915533,-0.04185221992941477,0.04647062385012727,-0.4678388165212945,1.04223553476481,-0.3000738745464401,-0.19895707634925708,0.19961081201264316,0.1645591318728012,-0.3442602325747359,-0.14333582277640022,-0.23735119057984394,0.20098406454649592,-0.4295444468448069,0.8661327962781448,-0.580031360891632,-0.3451846346151417,-0.044625426050632154,0.25589745871856856,-1.1936884516032655,-0.3028969529447071,0.2649319713626611,-0.32115174393116425,-0.3483069466757067,-0.46144808061869746,-0.3451846346151417,-0.9810153478076202,-0.20844337369832297,-0.997017180772587,0.5209364456956412,-0.36740956637200806],"type":"scatter"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"User Segments (DBSCAN) | 2 clusters"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"legend":{"font":{"size":11},"bgcolor":"rgba(15,23,42,0.8)"},"xaxis":{"title":{"text":"PCA 1"},"gridcolor":"#334155"},"yaxis":{"title":{"text":"PCA 2"},"gridcolor":"#334155"},"paper_bgcolor":"#0f172a","plot_bgcolor":"#1e293b","height":500},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Dataset Summary</h4>
+<p>The dataset contains a total of <strong>44,031 events</</strong> recorded from <strong>499 users</strong> over a date range from <strong>December 24, 2025</strong> to <strong>January 20, 2026</strong>. There are <strong>80 unique event types</strong> categorized under the application.</p>
+
+<h4>Segment Analysis</h4>
+
+<h4>Outliers</h4>
+<p><strong>PERSONA NAME:</strong> Outliers</p>
+<p><strong>PROFILE:</strong> This segment consists of <strong>34 users</strong>, representing <strong>6.8%</strong> of the total user base. They have an average of <strong>361.8 events</strong> and a booking rate of <strong>35.3%</strong>.</p>
+<p><strong>TARGETING RECOMMENDATION:</strong> Consider analyzing their behavior further to identify what drives their engagement and booking, and create tailored experiences or offers that could enhance their usage.</p>
+
+<h4>Segment 0</h4>
+<p><strong>PERSONA NAME:</strong> Casual Users</p>
+<p><strong>PROFILE:</strong> This segment includes <strong>465 users</strong>, making up <strong>93.2%</strong> of the total user base. They engage with an average of <strong>68.2 events</strong> but have a low booking rate of <strong>4.7%</strong>.</p>
+<p><strong>TARGETING RECOMMENDATION:</strong> Implement targeted push notifications with incentives such as discounts or promotions to encourage bookings among this segment.</p>
+
+<h4>Overall Assessment</h4>
+<p>The user base appears to have a significant portion of low-engagement users (Casual Users) compared to a smaller group of more engaged users (Outliers). The ratio of high-value users (Outliers) to low-engagement users (Casual Users) is approximately <strong>1:13.7</strong>, indicating a need for strategies to convert more casual users into active bookers.</p></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="conversion_rates">
+            <div class="metric-header">
+                <h2>Conversion Rate Analysis</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="827ac138-b817-42e4-9bf9-98e4eb5800a5" class="plotly-graph-div" style="height:440px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("827ac138-b817-42e4-9bf9-98e4eb5800a5")) {                    Plotly.newPlot(                        "827ac138-b817-42e4-9bf9-98e4eb5800a5",                        [{"marker":{"color":["#818cf8","#f59e0b","#34d399"]},"text":["499","36","9"],"textfont":{"color":"#f8fafc","size":13},"textposition":"auto","x":["Total","Attempted","Success"],"y":[499,36,9],"type":"bar","xaxis":"x","yaxis":"y"},{"hole":0.5,"labels":["Success","Failed","No Payment"],"marker":{"colors":["#34d399","#ef4444","#475569"],"line":{"color":"#0f172a","width":2}},"textfont":{"color":"#f8fafc","size":11},"textinfo":"percent+label","values":[9,17,463],"type":"pie","domain":{"x":[0.5950000000000001,1.0],"y":[0.0,1.0]}}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"xaxis":{"anchor":"y","domain":[0.0,0.49500000000000005]},"yaxis":{"anchor":"x","domain":[0.0,1.0]},"annotations":[{"font":{"size":16},"showarrow":false,"text":"Conversion Funnel","x":0.24750000000000003,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Payment Outcome","x":0.7975000000000001,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"Conversion: 1.8%"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"paper_bgcolor":"#0f172a","plot_bgcolor":"#1e293b","height":440,"showlegend":false},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Analysis of Bus Ticket Booking App Dataset</h4>
+
+<p>This analysis covers the conversion metrics and performance of the bus ticket booking app based on the dataset provided. The focus is on conversion health, payment failure analysis, push notification ROI, and actionable conversion tactics.</p>
+
+<h4>1. CONVERSION HEALTH</h4>
+<p>The overall conversion rate for the app is <strong>1.8%</strong>, which is below the typical industry benchmark of <strong>2-5%</strong>. This indicates that the app is not performing well in converting users into paying customers.</p>
+<p>Comparing the two time periods:</p>
+<ul>
+    <li>First Half (24-Dec to 06-Jan): <strong>1.74%</strong></li>
+    <li>Second Half (06-Jan to 20-Jan): <strong>2.01%</strong></li>
+</ul>
+<p>While there is a slight improvement in the second half, the overall conversion rate remains below the industry standard.</p>
+
+<h4>2. PAYMENT FAILURE ANALYSIS</h4>
+<p>The payment success rate is <strong>25.0%</strong>, which is significantly below the acceptable threshold of <strong>80%</strong> for a reliable payment flow. This suggests major issues within the payment process.</p>
+<p>Payment failure events include:</p>
+<ul>
+    <li>Total payment attempts: <strong>36</strong></li>
+    <li>Payment failures: <strong>17</strong></li>
+    <li>Payment failure rate: <strong>47.22%</strong></li>
+</ul>
+<p>Possible causes for these failures could include technical issues during the payment process, user interface problems, or lack of payment options.</p>
+
+<h4>3. PUSH NOTIFICATION ROI</h4>
+<p>Currently, there are <strong>0</strong> push users, resulting in a push conversion rate of <strong>0%</strong>. This indicates that push notifications are not being utilized to drive conversions, and there is no comparison available with organic users.</p>
+
+<h4>4. CONVERSION TACTICS</h4>
+<p>To improve conversion rates, the following specific, implementable changes are recommended:</p>
+<ul>
+    <li><strong>Enhance Payment Flow:</strong> Streamline the payment process by reducing the number of steps and ensuring multiple payment options. Expected impact: Increase payment success rate to at least <strong>70%</strong>, improving overall conversion rate to approximately <strong>3.5%</strong>.</li>
+    <li><strong>Implement Push Notifications:</strong> Start utilizing push notifications to re-engage users who abandon the app during the booking process. Expected impact: Achieve a push conversion rate of <strong>5%</strong> among push users, potentially increasing overall conversions by <strong>0.5%</strong>.</li>
+    <li><strong>Address User Interface Issues:</strong> Conduct user testing to identify and fix UI/UX issues that may hinder the booking process. Expected impact: Improve user satisfaction and reduce payment failures by <strong>20%</strong>, leading to an increase in payment success rate to <strong>50%</strong>.</li>
+</ul></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="time_to_action">
+            <div class="metric-header">
+                <h2>Time-to-Action Analysis</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="0de6e933-f57e-4220-91e8-d161ce38f7dc" class="plotly-graph-div" style="height:480px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("0de6e933-f57e-4220-91e8-d161ce38f7dc")) {                    Plotly.newPlot(                        "0de6e933-f57e-4220-91e8-d161ce38f7dc",                        [{"box":{"visible":true},"fillcolor":"rgba(129,140,248,0.3)","line":{"color":"#818cf8"},"marker":{"color":"#818cf8"},"meanline":{"visible":true},"name":"bus_search -\u003e bus_result","y":[0.008,0.039,0.017,0.016,0.022,0.016,0.011,0.019,0.016,0.011,0.012,0.009,0.03,0.006,0.07999999999999977,0.003,0.012,0.019,0.028,0.006,0.021,0.011,0.024,0.005,0.013,0.07999999999999977,0.07999999999999977,0.021,0.07999999999999977,0.008,0.011,0.005,0.009,0.013,0.016,0.018,0.016,0.011,0.02,0.011,0.045,0.013,0.019,0.009,0.008,0.07999999999999977,0.015,0.018,0.006,0.043,0.008,0.018,0.014,0.008,0.024,0.014,0.02,0.012,0.011,0.009,0.014,0.027,0.07999999999999977,0.024,0.004,0.022,0.011,0.01,0.017,0.034,0.005,0.011,0.012,0.012,0.007,0.035,0.012,0.014,0.019,0.009,0.019,0.04,0.008,0.01,0.004,0.012,0.01,0.006,0.014,0.018,0.022,0.016,0.009,0.021,0.011,0.005,0.008,0.011,0.008,0.006,0.034,0.022,0.019,0.016,0.011,0.018,0.01,0.022,0.015,0.014,0.015,0.005,0.016,0.01,0.017,0.028,0.029,0.021,0.032,0.07999999999999977,0.066,0.013,0.019,0.07999999999999977,0.07999999999999977,0.01,0.011,0.008,0.04,0.007,0.021,0.011,0.015,0.009,0.011,0.011,0.014,0.011,0.008,0.014,0.009,0.055,0.015,0.036,0.006,0.023,0.018,0.009,0.005,0.009,0.07999999999999977,0.013,0.015,0.01,0.005,0.009,0.034,0.041,0.07999999999999977,0.019,0.024,0.014,0.008,0.033,0.01,0.017,0.007,0.07999999999999977,0.007,0.03,0.014,0.07999999999999977,0.007,0.026,0.012,0.01,0.028,0.01,0.018,0.011,0.008,0.023,0.028,0.008,0.011,0.01,0.033,0.005,0.016,0.016,0.015,0.02,0.008,0.012,0.01,0.01,0.017,0.009,0.006,0.004,0.016,0.011,0.017,0.011,0.016,0.006,0.013,0.02,0.02,0.05,0.02,0.031,0.03,0.018,0.015,0.007,0.026,0.001,0.017,0.019,0.027,0.009,0.01,0.07999999999999977,0.014,0.012,0.024,0.07999999999999977,0.011,0.017,0.011,0.019,0.022,0.01,0.02,0.007,0.019,0.026,0.01,0.006,0.011,0.01,0.008,0.047,0.008,0.009,0.025,0.015,0.012,0.012,0.019,0.013,0.012,0.015,0.027,0.05,0.065,0.014,0.009,0.033,0.017,0.032,0.012,0.009,0.02,0.02,0.021,0.017,0.01,0.07999999999999977,0.03,0.015,0.011,0.001,0.057,0.014,0.034,0.01,0.01,0.01,0.006,0.021,0.007,0.024,0.005,0.008,0.017,0.015,0.022,0.03,0.013,0.009,0.016,0.032,0.009,0.006,0.048,0.006,0.012,0.031,0.015,0.038,0.027,0.011,0.007,0.007,0.015,0.013,0.07999999999999977,0.017,0.064,0.015,0.009,0.025,0.007,0.01,0.014,0.016,0.019,0.053,0.009,0.029,0.015,0.018,0.033,0.015,0.01,0.012,0.044,0.07999999999999977,0.049,0.01,0.028,0.007,0.013,0.013,0.016,0.009,0.014,0.009,0.033,0.015,0.014,0.01,0.025,0.026,0.017,0.019,0.013,0.007,0.022,0.009,0.041,0.011,0.012,0.01,0.023,0.07999999999999977,0.016,0.019,0.062,0.005,0.008,0.011,0.03,0.038,0.007],"type":"violin"},{"box":{"visible":true},"fillcolor":"rgba(34,211,238,0.3)","line":{"color":"#22d3ee"},"marker":{"color":"#22d3ee"},"meanline":{"visible":true},"name":"bus_result -\u003e select_seat","y":[28.792,28.063,73.837,30.711,74.666,58.911,41.195,26.43,0.084,15.346,61.199,95.125,28.182,221.22934999999993,33.803,86.608,221.22934999999993,97.726,85.592,9.285,43.073,25.97,40.7,86.072,62.494,27.896,50.946,114.982,23.223,77.928,88.925,27.01,18.439,140.074,173.524,29.69,221.22934999999993,38.896,62.779,71.402,45.042,0.004,61.44,221.22934999999993,6.29,171.195,21.147,73.349,58.984,221.22934999999993,25.217,69.619,95.333,10.925,75.986,27.387,43.838,221.22934999999993,12.233,22.957,40.207,84.765,24.737,27.793,20.221,26.385,160.491,33.546,36.345,76.97,26.364,121.885,11.628,195.128,109.125,48.726,26.194,31.801,92.712,25.76,39.793,73.873,21.015,22.634,99.328,33.018,50.617,56.527,139.881,16.505,0.762,36.665,29.13,20.773,131.425,20.345,58.24,87.045,11.392,56.336,37.783,122.868,34.066,123.0,42.173,19.641,221.22934999999993,91.247,103.72,32.094,124.468,87.89,55.985,83.09,63.768,80.29,15.407,25.445,18.913,74.074,216.308,31.764,86.975,56.733,26.974,38.533,105.67,78.647,45.55,94.419,22.316,94.497,24.012,66.909,52.751,66.406,31.307,28.915,20.242,186.53,44.077,27.653,52.827,40.598,83.261,25.594,85.31,33.516,54.792,171.637,101.197,221.22934999999993,42.714,137.514],"type":"violin"},{"box":{"visible":true},"fillcolor":"rgba(52,211,153,0.3)","line":{"color":"#34d399"},"marker":{"color":"#34d399"},"meanline":{"visible":true},"name":"select_seat -\u003e payment_initiate","y":[124.742,423.746,2233.6995,1734.209,201.587,75.058,169.488,32.317,253.55,50.695,52.398,153.169,108.754,276.229,2233.6995,75.465,540.365,90.29,171.692,131.754,239.353,195.671,13.295,124.457,69.82,33.44,594.114,107.082,193.323,66.155,37.749],"type":"violin"},{"box":{"visible":true},"fillcolor":"rgba(251,191,36,0.3)","line":{"color":"#fbbf24"},"marker":{"color":"#fbbf24"},"meanline":{"visible":true},"name":"generate_otp -\u003e verify_otp","y":[5.471,19.884,5.273,40.47119999999992,40.47119999999992,30.407,14.72,40.47119999999992,2.596,6.203,8.588,7.676,4.509,7.268,2.593,4.944,3.143,4.853,2.955,6.595,14.639,2.308,9.064,19.875,17.589,2.745,6.005,37.632,10.267,2.219,5.386,5.84,6.063,2.663,6.256,4.233,39.153,40.47119999999992,2.729,35.471,7.626,7.878,12.093,20.038,4.459,8.022,3.905,7.055,6.663,28.995,2.945,4.38,21.354,17.337,15.873,40.47119999999992,16.496,5.732,3.926,3.242,6.035,4.064,5.611,7.187,3.711,5.528,6.466,2.596,12.78,8.283,39.939,8.075,40.47119999999992,7.877,4.896,4.761,6.937,18.594,3.097,3.148,12.591,4.887,5.899,18.24,9.95,38.571,40.47119999999992,12.943,40.47119999999992,6.493,8.619,4.925,4.713,4.988,16.848,4.358,40.47119999999992,3.846,6.917,5.1,5.441,4.627,3.061,13.915,9.538,5.166,7.378,15.472,9.681,4.105,6.497,4.052,4.098,6.124,2.805,2.667,3.621,4.813,2.809,2.999,6.912,3.881,40.47119999999992,5.02,6.814,7.05,3.706,5.435,2.226,7.287,4.553,5.139,3.393,5.617,3.12,31.157,14.723,3.497,4.497,3.077,20.499,28.543,40.47119999999992,3.19,11.238,3.104,3.614,6.335,8.746,2.858,7.329,14.796,3.67,4.899,25.154,12.003,3.522,9.615,3.156,12.775,31.791,3.555,8.266,29.39,40.47119999999992,4.118,8.469,30.018,8.207,3.785,5.239,8.492,3.205,11.669,6.355,2.253,6.692,3.667,3.509,3.042,7.687,7.342,7.683,15.652,19.272,3.386,3.88,5.991,3.938,2.931,2.765,9.536,17.62,4.285,3.754,7.904,2.983,4.714,9.334,14.802,3.434,17.734,5.447,3.387,3.316,4.645,12.594,6.771,19.169,6.899,3.451,3.735,9.144,40.47119999999992,27.872,17.893,28.036,11.681,4.654,5.078,2.298,6.473,5.322,5.937,3.545,14.043,2.797,40.47119999999992,29.64,2.929,20.401,24.401,6.779,4.906,7.488,24.181,5.342,3.553,4.331,13.632,3.153,15.857,5.73,8.86,40.47119999999992,3.294,8.321,2.826,3.402,6.403,2.011,2.765,9.82,21.47,4.929,3.026,4.706,40.47119999999992,4.61,3.115,4.484,22.793,4.394,2.879,9.978,13.763,2.392,3.751,4.032,2.105,4.802,3.09,3.027,2.984,40.47119999999992,9.709,3.648,8.052,27.327,3.399,4.302,7.403,12.711,2.618,19.091,13.224,6.253,6.231,6.576,3.154,6.993,2.976,3.306,12.767,4.982,5.07,38.478,16.622,6.599,6.69,4.898,3.566,5.761,14.503,4.866,7.581,4.319,2.71,6.529,2.674,3.313,3.517,2.891,4.704,3.226,40.47119999999992,9.85,4.533,3.953,4.778,5.957,4.651,6.3,28.598,23.408,23.004,3.289,3.559,3.372,10.023,7.555,3.804,3.908,4.156,4.146,16.892,4.0,13.701,3.678,10.034,9.049,16.138,9.908,10.825,27.733,4.588,7.804,2.921,25.049,5.109,6.599,28.654,5.08,6.874,5.035,3.624,26.735,8.85,9.282,21.37,8.563,6.737,4.51,4.771,19.846,2.655,40.47119999999992,3.3,13.53,40.47119999999992,27.823,12.163,5.264,22.75,3.143,40.47119999999992,2.633,4.111,3.518,4.645,25.554,3.312,4.15,13.576,31.571,3.596,4.468,3.003,4.405,2.821,6.153,3.539,21.75,23.354,4.54,4.8,8.419,31.839,2.563,30.292,21.415,30.142,3.181,4.203,4.094,4.619,4.543,40.47119999999992,8.305,15.688,8.162,17.078,31.215,7.14,2.156,3.266,4.471,3.772,9.37,23.151,11.222,18.316,5.268,15.759,20.1,40.47119999999992,3.19,14.518,5.918,10.735,4.882,2.517,5.723,5.235,2.267,3.334,2.794,14.94,7.334,28.531,4.686,2.904,3.941,12.07,11.223,23.067,5.387,2.547,9.167,12.453,16.083,8.983,2.639,3.532,28.883,4.756,9.138,5.152,2.897,28.082,26.287,5.453,4.699,2.923,27.781,9.774,2.191,2.648,6.871,5.796,21.081,5.327,23.58,21.857,3.44,3.619,3.388,5.984,40.47119999999992,2.353,37.057,8.014,3.04,3.113,27.8,6.799,3.817,40.47119999999992,7.747,6.033,1.729,20.657,6.649,3.934,5.718],"type":"violin"},{"box":{"visible":true},"fillcolor":"rgba(248,113,113,0.3)","line":{"color":"#f87171"},"marker":{"color":"#f87171"},"meanline":{"visible":true},"name":"bus_search -\u003e payment_success","y":[1906.317,269.552,2998.6796999999992,672.745,537.974,515.973,313.794,250.775],"type":"violin"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"Time-to-Action Latency (s)"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"yaxis":{"title":{"text":"Seconds"},"gridcolor":"#334155"},"paper_bgcolor":"#0f172a","plot_bgcolor":"#1e293b","height":480,"showlegend":false},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Analysis of Bus Ticket Booking App Latency</h4>
+
+<p>The analysis of user flow latency and time-to-action metrics for the bus ticket booking app has been completed. Below are the detailed findings based on the computed latencies between key events.</p>
+
+<h4>SLOWEST TRANSITION</h4>
+<p>The pair with the highest median latency is from <strong>select_seat</strong> to <strong>payment_initiate</strong> with a median latency of <strong>131.8 seconds</strong>. This is significantly outside the benchmark of 60-180 seconds for seat selection and passenger details.</p>
+
+<h4>BOTTLENECK ANALYSIS</h4>
+<p>There are notable bottlenecks in the user flow:</p>
+<ul>
+    <li>The transition from <strong>bus_result</strong> to <strong>select_seat</strong> has a median latency of <strong>50.8 seconds</strong> and a P90 of <strong>140.0 seconds</strong>. This indicates a potential UX issue as the median is already close to the upper limit of the benchmark.</li>
+    <li>The transition from <strong>select_seat</strong> to <strong>payment_initiate</strong> shows a high mean latency of <strong>384.3 seconds</strong> and a P90 of <strong>594.1 seconds</strong>, suggesting a significant technical bottleneck.</li>
+</ul>
+
+<h4>END-TO-END TIME</h4>
+<p>The full search-to-payment flow takes a median of <strong>527.0 seconds</strong> (approximately 8.8 minutes), which is above the competitive benchmark of 3-8 minutes for a healthy flow. This indicates that the overall user experience may be suffering due to excessive latency.</p>
+
+<h4>SPEED IMPROVEMENTS</h4>
+<p>To reduce latency, the following specific strategies can be implemented:</p>
+<ul>
+    <li><strong>Optimize Seat Selection Process:</strong> Streamline the UI and reduce the number of steps required to select a seat. Expected time savings: <strong>30-60 seconds</strong>.</li>
+    <li><strong>Improve Backend Response Times:</strong> Enhance server performance to reduce the time taken to fetch results and process selections. Expected time savings: <strong>20-40 seconds</strong>.</li>
+    <li><strong>Implement Caching Mechanisms:</strong> Use caching for frequently accessed data to speed up the transition from results to seat selection. Expected time savings: <strong>15-30 seconds</strong>.</li>
+</ul>
+
+<p>These improvements can help in aligning the app's performance with industry benchmarks and enhance user satisfaction.</p></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="event_frequency">
+            <div class="metric-header">
+                <h2>Event Frequency Distribution</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="a6aec159-ba20-498e-a7bd-83cc7edf9b6e" class="plotly-graph-div" style="height:520px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("a6aec159-ba20-498e-a7bd-83cc7edf9b6e")) {                    Plotly.newPlot(                        "a6aec159-ba20-498e-a7bd-83cc7edf9b6e",                        [{"branchvalues":"total","customdata":{"dtype":"f8","bdata":"exSuR+H6IUDhehSuR+EZQHsUrkfhehlAhetRuB6FE0D2KFyPwvUMQFG4HoXrUQxA4XoUrkfhCkAAAAAAAAAKQAAAAAAAAApA7VG4HoXrCUCkcD0K16MIQHsUrkfhegZAZmZmZmZmBkBxPQrXo3AFQD0K16NwPQRAPQrXo3A9BEBI4XoUrkcDQEjhehSuRwNA9ihcj8L1AkCkcD0K16MCQJqNQyKnvhFA","shape":"21, 1"},"domain":{"x":[0.0,1.0],"y":[0.0,1.0]},"hovertemplate":"labels=%{label}\u003cbr\u003ecount=%{value}\u003cbr\u003eparent=%{parent}\u003cbr\u003eid=%{id}\u003cbr\u003epct=%{color}\u003cextra\u003e\u003c\u002fextra\u003e","ids":["All Events\u002f_user","All Events\u002f_location_special-town-search","All Events\u002fBuslist_date change","All Events\u002f_location_elastic-town-search","All Events\u002f_bus-search_user-bus-search","All Events\u002f_location_from-town","All Events\u002f_bus-search_list","All Events\u002f_rewards_best-V2","All Events\u002fbus_search","All Events\u002fbus_result","All Events\u002fpageview_bus_list","All Events\u002f_ticket","All Events\u002fselect_seat","All Events\u002f_profile","All Events\u002fSeatSelection_Click On Back","All Events\u002fpageview_seat_selection","All Events\u002fBuslist_bus_selection","All Events\u002fbus_detail","All Events\u002f_history_recommended-journey","All Events\u002f_bus-search_v2_layout","All Events"],"labels":["_user","_location_special-town-search","Buslist_date change","_location_elastic-town-search","_bus-search_user-bus-search","_location_from-town","_bus-search_list","_rewards_best-V2","bus_search","bus_result","pageview_bus_list","_ticket","select_seat","_profile","SeatSelection_Click On Back","pageview_seat_selection","Buslist_bus_selection","bus_detail","_history_recommended-journey","_bus-search_v2_layout","All Events"],"marker":{"coloraxis":"coloraxis","colors":{"dtype":"f8","bdata":"exSuR+H6IUDhehSuR+EZQHsUrkfhehlAhetRuB6FE0D2KFyPwvUMQFG4HoXrUQxA4XoUrkfhCkAAAAAAAAAKQAAAAAAAAApA7VG4HoXrCUCkcD0K16MIQHsUrkfhegZAZmZmZmZmBkBxPQrXo3AFQD0K16NwPQRAPQrXo3A9BEBI4XoUrkcDQEjhehSuRwNA9ihcj8L1AkCkcD0K16MCQJqNQyKnvhFA"},"line":{"color":"#0f172a","width":1}},"name":"","parents":["All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events","All Events",""],"values":{"dtype":"f8","bdata":"AAAAAADurkAAAAAAAD6mQAAAAAAA7KVAAAAAAADKoEAAAAAAAOCYQAAAAAAAYJhAAAAAAAAYl0AAAAAAAFyWQAAAAAAAVJZAAAAAAABIlkAAAAAAADiVQAAAAAAAUJNAAAAAAABIk0AAAAAAAHiSQAAAAAAAcJFAAAAAAABskUAAAAAAAJiQQAAAAAAAlJBAAAAAAABIkEAAAAAAAASQQAAAAAAAW99A"},"type":"treemap","textfont":{"color":"#f8fafc"}}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"coloraxis":{"colorbar":{"title":{"text":"pct"}},"colorscale":[[0,"#1e1b4b"],[0.3,"#4338ca"],[0.7,"#818cf8"],[1,"#c4b5fd"]]},"legend":{"tracegroupgap":0},"title":{"text":"Event Frequency (Top 20)"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"margin":{"t":50,"l":10,"r":10,"b":10},"paper_bgcolor":"#0f172a","plot_bgcolor":"#0f172a","height":520},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Analysis of Bus Ticket Booking App Dataset</h4>
+
+<p>The dataset contains a total of <strong>44,031 events</strong> recorded from <strong>499 users</strong> over the period from <strong>December 24, 2025</strong> to <strong>January 20, 2026</strong>. There are <strong>80 unique event types</strong> in the application category.</p>
+
+<h4>Dominant Patterns</h4>
+<p>The following events dominate user interactions:</p>
+<ul>
+    <li><strong>_user:</strong> 3,959 events (8.99%)</li>
+    <li><strong>_location_special-town-search:</strong> 2,847 events (6.47%)</li>
+    <li><strong>Buslist_date change:</strong> 2,806 events (6.37%)</li>
+    <li><strong>_location_elastic-town-search:</strong> 2,149 events (4.88%)</li>
+    <li><strong>_bus-search_user-bus-search:</strong> 1,592 events (3.62%)</li>
+    <li><strong>_location_from-town:</strong> 1,560 events (3.54%)</li>
+    <li><strong>_bus-search_list:</strong> 1,478 events (3.36%)</li>
+    <li><strong>_rewards_best-V2:</strong> 1,431 events (3.25%)</li>
+    <li><strong>bus_search:</strong> 1,429 events (3.25%)</li>
+    <li><strong>bus_result:</strong> 1,426 events (3.24%)</li>
+</ul>
+<p>This distribution indicates that users primarily engage with search-related functionalities, particularly focusing on location searches and bus listings. The high frequency of the <strong>_user</strong> event suggests that user identification or session initiation is a key interaction point.</p>
+
+<h4>Event Noise</h4>
+<p>There are no events that appear suspiciously often, indicating no clear logging bugs. However, events with very low counts (< 10) were not explicitly identified in the summary, suggesting that there may be features that are underused or potentially broken. Further investigation into events with low counts is recommended.</p>
+
+<h4>Power Users</h4>
+<p>The analysis of user engagement reveals the following statistics:</p>
+<ul>
+    <li><strong>Median event count:</strong> 56</li>
+    <li><strong>P90 event count:</strong> 148</li>
+    <li><strong>P99 event count:</strong> 720</li>
+    <li><strong>Maximum event count:</strong> 1,921</li>
+    <li><strong>Users above 200 events:</strong> 34</li>
+</ul>
+<p>Power users (P90+) exhibit significantly higher engagement compared to casual users, with P90 users averaging 148 events compared to the median of 56. This indicates a strong engagement ceiling and suggests that a small segment of users is highly invested in the app.</p>
+
+<h4>Consolidation</h4>
+<p>Upon reviewing the event names, there are several events related to bus searching and location that could potentially be consolidated:</p>
+<ul>
+    <li><strong>_location_special-town-search</strong> and <strong>_location_elastic-town-search</strong> may be redundant.</li>
+    <li><strong>_bus-search_user-bus-search</strong> and <strong>bus_search</strong> could be merged for clarity.</li>
+</ul>
+<p>Consolidating these events could simplify the event tracking and provide clearer insights into user behavior.</p></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="temporal_patterns">
+            <div class="metric-header">
+                <h2>Temporal Usage Patterns</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="489a697d-8b0d-4420-9650-83dce24d1856" class="plotly-graph-div" style="height:400px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("489a697d-8b0d-4420-9650-83dce24d1856")) {                    Plotly.newPlot(                        "489a697d-8b0d-4420-9650-83dce24d1856",                        [{"colorbar":{"tickfont":{"color":"#94a3b8"},"title":{"font":{"color":"#94a3b8"},"text":"Events"}},"colorscale":[[0,"#0f172a"],[0.2,"#312e81"],[0.4,"#4338ca"],[0.6,"#6366f1"],[0.8,"#a78bfa"],[1,"#e9d5ff"]],"x":["00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"],"y":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"z":[[90.0,141.0,160.0,159.0,372.0,282.0,89.0,92.0,433.0,413.0,177.0,368.0,256.0,375.0,262.0,58.0,181.0,122.0,60.0,71.0,0.0,122.0,30.0,161.0],[0.0,96.0,173.0,192.0,273.0,67.0,205.0,364.0,333.0,122.0,348.0,159.0,349.0,358.0,122.0,522.0,112.0,239.0,140.0,87.0,14.0,70.0,0.0,107.0],[86.0,70.0,193.0,147.0,399.0,239.0,327.0,374.0,204.0,713.0,440.0,161.0,22.0,149.0,108.0,946.0,366.0,127.0,39.0,147.0,0.0,23.0,15.0,69.0],[31.0,140.0,47.0,453.0,136.0,266.0,284.0,307.0,328.0,682.0,469.0,468.0,548.0,207.0,519.0,458.0,749.0,466.0,641.0,85.0,41.0,0.0,25.0,71.0],[66.0,146.0,444.0,614.0,330.0,535.0,965.0,718.0,437.0,666.0,602.0,709.0,448.0,784.0,173.0,593.0,653.0,618.0,571.0,106.0,256.0,44.0,0.0,0.0],[43.0,199.0,127.0,84.0,331.0,326.0,204.0,168.0,563.0,643.0,423.0,424.0,178.0,234.0,290.0,342.0,269.0,470.0,126.0,216.0,58.0,0.0,0.0,0.0],[135.0,130.0,212.0,224.0,393.0,332.0,231.0,167.0,393.0,304.0,853.0,305.0,421.0,247.0,640.0,510.0,61.0,385.0,73.0,0.0,0.0,53.0,13.0,42.0]],"type":"heatmap"}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"Usage Heatmap | Peak: Friday 9:00 | Ratio: 42.7x"},"font":{"family":"Inter,sans-serif","size":12,"color":"#cbd5e1"},"margin":{"l":100,"t":50},"paper_bgcolor":"#0f172a","plot_bgcolor":"#0f172a","height":400},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>Dataset Summary</h4>
+<p>The dataset contains a total of <strong>44,031 events</strong> recorded from <strong>499 users</strong> over a period from <strong>December 24, 2025</strong> to <strong>January 20, 2026</strong>. There are <strong>80 event types</strong> categorized under application events.</p>
+
+<h4>Temporal Usage Analysis</h4>
+<p>The analysis reveals the following key findings regarding user engagement patterns:</p>
+<ul>
+    <li><strong>Peak Hour:</strong> 9 AM</li>
+    <li><strong>Off-Peak Hour:</strong> 10 PM</li>
+    <li><strong>Peak Day:</strong> Friday</li>
+    <li><strong>Low Day:</strong> Tuesday</li>
+    <li><strong>Peak-to-Trough Ratio:</strong> 42.7</li>
+</ul>
+
+<h4>PUSH NOTIFICATION TIMING</h4>
+<p>For maximum open rates, the marketing team should send push notifications during the peak hours of <strong>9 AM</strong> on <strong>Fridays</strong>. This is when user engagement is at its highest, making it the optimal time for notifications.</p>
+
+<h4>CAPACITY PLANNING</h4>
+<p>The app requires maximum server capacity during the peak hour of <strong>9 AM</strong> on <strong>Fridays</strong>. Given the high peak-to-trough ratio of <strong>42.7</strong>, infrastructure should be prepared for significant traffic spikes during this time.</p>
+
+<h4>MARKETING WINDOWS</h4>
+<p>The best times for running in-app promotions or flash sales would be during the peak hour of <strong>9 AM</strong> on <strong>Fridays</strong>. This period aligns with high user engagement, ensuring that promotional messages reach the largest audience effectively. Additionally, considering the off-peak hour of <strong>10 PM</strong>, marketing efforts could also target this time for users who may be planning their next day’s travel.</p>
+
+<h4>WEEKEND VS WEEKDAY</h4>
+<p>The data does not provide explicit weekend vs weekday usage patterns; however, the peak day being <strong>Friday</strong> suggests a potential trend towards leisure travel as users prepare for weekend trips. The low engagement on <strong>Tuesdays</strong> indicates that this app may cater more to leisure travelers rather than strictly commuters, though further analysis would be needed to confirm user demographics.</p></div>
+            </div>
+        </section>
+        
+        <section class="metric-card" id="user_journey_insights">
+            <div class="metric-header">
+                <h2>User Journey & Persona Analysis</h2>
+            </div>
+            <div class="chart-container"><div>                            <div id="f4e510d5-a758-4e20-89c4-3e835abdd20e" class="plotly-graph-div" style="height:400px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("f4e510d5-a758-4e20-89c4-3e835abdd20e")) {                    Plotly.newPlot(                        "f4e510d5-a758-4e20-89c4-3e835abdd20e",                        [{"hole":0.4,"labels":["Browsers","Shoppers","Attempters","Bookers"],"marker":{"colors":["#94a3b8","#60a5fa","#fbbf24","#34d399"]},"textinfo":"percent+label","values":[178,170,27,9],"type":"pie","domain":{"x":[0.0,0.2888888888888889],"y":[0.0,1.0]}},{"marker":{"color":"#818cf8"},"text":["384","206","36","9"],"textposition":"auto","x":["searched","selected","pay_init","booked"],"y":[384,206,36,9],"type":"bar","xaxis":"x","yaxis":"y"},{"labels":["Payment Failure","App Error","Clean Journey"],"marker":{"colors":["#ef4444","#f43f5e","#22c55e"]},"textinfo":"percent+label","values":[17,0,482],"type":"pie","domain":{"x":[0.7111111111111111,1.0],"y":[0.0,1.0]}}],                        {"template":{"data":{"candlestick":[{"decreasing":{"line":{"color":"#000033"}},"increasing":{"line":{"color":"#000032"}},"type":"candlestick"}],"contourcarpet":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contourcarpet"}],"contour":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"contour"}],"heatmap":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"heatmap"}],"histogram2d":[{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"type":"histogram2d"}],"icicle":[{"textfont":{"color":"white"},"type":"icicle"}],"sankey":[{"textfont":{"color":"#000036"},"type":"sankey"}],"scatter":[{"marker":{"line":{"width":0}},"type":"scatter"}],"table":[{"cells":{"fill":{"color":"#000038"},"font":{"color":"#000037"},"line":{"color":"#000039"}},"header":{"fill":{"color":"#000040"},"font":{"color":"#000036"},"line":{"color":"#000039"}},"type":"table"}],"waterfall":[{"connector":{"line":{"color":"#000036","width":2}},"decreasing":{"marker":{"color":"#000033"}},"increasing":{"marker":{"color":"#000032"}},"totals":{"marker":{"color":"#000034"}},"type":"waterfall"}]},"layout":{"coloraxis":{"colorscale":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorscale":{"diverging":[[0.0,"#000021"],[0.1,"#000022"],[0.2,"#000023"],[0.3,"#000024"],[0.4,"#000025"],[0.5,"#000026"],[0.6,"#000027"],[0.7,"#000028"],[0.8,"#000029"],[0.9,"#000030"],[1.0,"#000031"]],"sequential":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]],"sequentialminus":[[0.0,"#000011"],[0.1111111111111111,"#000012"],[0.2222222222222222,"#000013"],[0.3333333333333333,"#000014"],[0.4444444444444444,"#000015"],[0.5555555555555556,"#000016"],[0.6666666666666666,"#000017"],[0.7777777777777778,"#000018"],[0.8888888888888888,"#000019"],[1.0,"#000020"]]},"colorway":["#000001","#000002","#000003","#000004","#000005","#000006","#000007","#000008","#000009","#000010"]}},"xaxis":{"anchor":"y","domain":[0.35555555555555557,0.6444444444444445]},"yaxis":{"anchor":"x","domain":[0.0,1.0]},"annotations":[{"font":{"size":16},"showarrow":false,"text":"User Segments","x":0.14444444444444446,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Journey Funnel","x":0.5,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Friction Impact","x":0.8555555555555556,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"title":{"font":{"size":18,"color":"#e2e8f0"},"text":"User Journey Overview"},"font":{"family":"Inter,sans-serif","size":11,"color":"#cbd5e1"},"paper_bgcolor":"#0f172a","plot_bgcolor":"#1e293b","height":400,"showlegend":false},                        {"responsive": true}                    )                };            </script>        </div></div>
+            <div class="insights-panel">
+                <div class="insights-label">Analysis</div>
+                <div class="insights-body"><h4>USER JOURNEY ANALYSIS OF BUS TICKET BOOKING APP</h4>
+
+<p>This analysis is based on the dataset collected from a bus ticket booking app, focusing on user interactions and behaviors throughout their journey.</p>
+
+<h4>1. USER TYPE BREAKDOWN</h4>
+<p>The breakdown of user types is as follows:</p>
+<ul>
+    <li><strong>Browsers:</strong> 178 users (35.7%)</li>
+    <li><strong>Shoppers:</strong> 170 users (34.1%)</li>
+    <li><strong>Attempters:</strong> 27 users (5.4%)</li>
+    <li><strong>Bookers:</strong> 9 users (1.8%)</li>
+</ul>
+<p>This funnel shape indicates a significant drop-off from Browsers to Bookers, suggesting that while many users show initial interest (Browsers), only a small fraction proceed to complete a booking (Bookers). The conversion rate from Browsers to Bookers is notably low at 1.8%, indicating potential barriers in the booking process that may deter users from completing their transactions.</p>
+
+<h4>2. FRICTION IMPACT</h4>
+<p>Out of the total users analyzed:</p>
+<ul>
+    <li><strong>Users facing payment failures:</strong> 17 (3.4%)</li>
+    <li><strong>Users facing app errors:</strong> 0 (0%)</li>
+</ul>
+<p>The presence of payment failures indicates a potential churn driver, as 3.4% of users experienced issues at a critical point in the journey. This could lead to frustration and abandonment, suggesting that addressing payment processes could improve overall conversion rates.</p>
+
+<h4>3. POWER USERS VS CASUALS</h4>
+<p>Based on the statistics, "high-intent" users can be defined as those who progress beyond the initial search stage. Specifically, Shoppers and Bookers demonstrate higher intent compared to Browsers. The distinction is significant as Shoppers have actively selected seats, indicating a stronger interest in making a purchase. The conversion from Shoppers to Bookers is also critical, as only 5.3% of Shoppers ultimately complete a booking.</p>
+
+<h4>4. PERSONALIZATION SUGGESTIONS FOR BROWSERS</h4>
+<p>To convert Browsers into Shoppers, the following two strategies could be implemented:</p>
+<ul>
+    <li><strong>Enhanced Seat Selection Experience:</strong> Introduce a feature that allows Browsers to visualize seat availability and benefits, such as legroom or proximity to exits, to encourage them to select a seat.</li>
+    <li><strong>Targeted Promotions:</strong> Offer personalized discounts or incentives for Browsers who have shown interest in specific routes or times, motivating them to take the next step in the booking process.</li>
+</ul></div>
+            </div>
+        </section>
+        
+
+        <div class="footer">
+            Generated by LangGraph Multi-Agent Pipeline
+        </div>
+    </main>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navItems.forEach(n => n.classList.remove('active'));
+                    const id = entry.target.id;
+                    navItems.forEach(link => {
+                        if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(id)) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: '-20% 0px -70% 0px' });
+        document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
+
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

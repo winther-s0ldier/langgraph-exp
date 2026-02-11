@@ -1,0 +1,38 @@
+{
+  "metric": "dropoff_analysis",
+  "title": "Drop-off Waterfall Analysis",
+  "data": [
+    {
+      "from": "App Start",
+      "to": "Search",
+      "lost": 95,
+      "pct": 19.8
+    },
+    {
+      "from": "Search",
+      "to": "Results",
+      "lost": 5,
+      "pct": 1.3
+    },
+    {
+      "from": "Results",
+      "to": "Seat Selection",
+      "lost": 173,
+      "pct": 45.6
+    },
+    {
+      "from": "Seat Selection",
+      "to": "Payment Init",
+      "lost": 170,
+      "pct": 82.5
+    },
+    {
+      "from": "Payment Init",
+      "to": "Payment Success",
+      "lost": 27,
+      "pct": 75.0
+    }
+  ],
+  "insights": "<h4>Analysis of User Drop-off and Abandonment Patterns in the Bus Ticket Booking App</h4>\n\n<p>The dataset contains a total of 44,031 events recorded from 499 users between December 24, 2025, and January 20, 2026. The analysis focuses on user drop-off at various stages of the booking flow.</p>\n\n<h4>Drop-off Analysis</h4>\n<p>The computed drop-offs between stages are as follows:</p>\n<ul>\n  <li><strong>App Start to Search:</strong> 95 users lost (19.8%)</li>\n  <li><strong>Search to Results:</strong> 5 users lost (1.3%)</li>\n  <li><strong>Results to Seat Selection:</strong> 173 users lost (45.6%)</li>\n  <li><strong>Seat Selection to Payment Initiation:</strong> 170 users lost (82.5%)</li>\n  <li><strong>Payment Initiation to Payment Success:</strong> 27 users lost (75.0%)</li>\n</ul>\n\n<h4>WORST TRANSITION</h4>\n<p>The worst transition occurs between <strong>Seat Selection and Payment Initiation</strong>, where 170 users were lost, representing a drop-off rate of <strong>82.5%</strong>.</p>\n\n<h4>REVENUE IMPACT</h4>\n<p>Estimating potential bookings lost at the worst transition (Seat Selection to Payment Initiation), if we assume each booking is worth an average of $50, the revenue impact can be calculated as follows:</p>\n<p><strong>Potential bookings lost:</strong> 170 users * $50 = $8,500.</p>\n\n<h4>ROOT CAUSES</h4>\n<p>Possible UX/technical reasons for the high drop-off at the Seat Selection stage include:</p>\n<ul>\n  <li><strong>Complexity in Seat Selection:</strong> Users may find the seat selection interface confusing or cumbersome, leading to frustration.</li>\n  <li><strong>Technical Issues:</strong> There may be performance issues or bugs that prevent users from completing the seat selection process smoothly.</li>\n  <li><strong>Lack of Clear Information:</strong> Insufficient information about seat options or pricing may deter users from proceeding to payment.</li>\n</ul>\n\n<h4>FIXES</h4>\n<p>To address the high drop-off rate, the following UX improvements are recommended, ranked by expected impact:</p>\n<ul>\n  <li><strong>Simplify the Seat Selection Interface:</strong> Redesign the interface to make it more intuitive and user-friendly, reducing complexity.</li>\n  <li><strong>Enhance Performance and Stability:</strong> Conduct thorough testing to identify and fix any technical issues that may hinder the seat selection process.</li>\n  <li><strong>Provide Clear Information:</strong> Ensure that users have access to detailed information about seat options, including pricing and amenities, to facilitate informed decision-making.</li>\n</ul>",
+  "iterations": 2
+}

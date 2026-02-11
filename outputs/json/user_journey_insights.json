@@ -1,0 +1,26 @@
+{
+  "metric": "user_journey_insights",
+  "title": "User Journey & Persona Analysis",
+  "data": {
+    "total_analyzed_users": 499,
+    "funnel_counts": {
+      "searched": 384,
+      "selected": 206,
+      "pay_init": 36,
+      "booked": 9
+    },
+    "user_types": {
+      "browsers": 178,
+      "shoppers": 170,
+      "attempters": 27,
+      "bookers": 9
+    },
+    "friction_counts": {
+      "faced_payment_failure": 17,
+      "faced_app_error": 0
+    },
+    "conversion_rate": 1.8
+  },
+  "insights": "<h4>USER JOURNEY ANALYSIS OF BUS TICKET BOOKING APP</h4>\n\n<p>This analysis is based on the dataset collected from a bus ticket booking app, focusing on user interactions and behaviors throughout their journey.</p>\n\n<h4>1. USER TYPE BREAKDOWN</h4>\n<p>The breakdown of user types is as follows:</p>\n<ul>\n    <li><strong>Browsers:</strong> 178 users (35.7%)</li>\n    <li><strong>Shoppers:</strong> 170 users (34.1%)</li>\n    <li><strong>Attempters:</strong> 27 users (5.4%)</li>\n    <li><strong>Bookers:</strong> 9 users (1.8%)</li>\n</ul>\n<p>This funnel shape indicates a significant drop-off from Browsers to Bookers, suggesting that while many users show initial interest (Browsers), only a small fraction proceed to complete a booking (Bookers). The conversion rate from Browsers to Bookers is notably low at 1.8%, indicating potential barriers in the booking process that may deter users from completing their transactions.</p>\n\n<h4>2. FRICTION IMPACT</h4>\n<p>Out of the total users analyzed:</p>\n<ul>\n    <li><strong>Users facing payment failures:</strong> 17 (3.4%)</li>\n    <li><strong>Users facing app errors:</strong> 0 (0%)</li>\n</ul>\n<p>The presence of payment failures indicates a potential churn driver, as 3.4% of users experienced issues at a critical point in the journey. This could lead to frustration and abandonment, suggesting that addressing payment processes could improve overall conversion rates.</p>\n\n<h4>3. POWER USERS VS CASUALS</h4>\n<p>Based on the statistics, \"high-intent\" users can be defined as those who progress beyond the initial search stage. Specifically, Shoppers and Bookers demonstrate higher intent compared to Browsers. The distinction is significant as Shoppers have actively selected seats, indicating a stronger interest in making a purchase. The conversion from Shoppers to Bookers is also critical, as only 5.3% of Shoppers ultimately complete a booking.</p>\n\n<h4>4. PERSONALIZATION SUGGESTIONS FOR BROWSERS</h4>\n<p>To convert Browsers into Shoppers, the following two strategies could be implemented:</p>\n<ul>\n    <li><strong>Enhanced Seat Selection Experience:</strong> Introduce a feature that allows Browsers to visualize seat availability and benefits, such as legroom or proximity to exits, to encourage them to select a seat.</li>\n    <li><strong>Targeted Promotions:</strong> Offer personalized discounts or incentives for Browsers who have shown interest in specific routes or times, motivating them to take the next step in the booking process.</li>\n</ul>",
+  "iterations": 2
+}

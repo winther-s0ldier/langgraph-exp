@@ -1,0 +1,48 @@
+{
+  "metric": "time_to_action",
+  "title": "Time-to-Action Analysis",
+  "data": [
+    {
+      "from": "bus_search",
+      "to": "bus_result",
+      "median": 0.0,
+      "mean": 0.4,
+      "p90": 0.0,
+      "n": 367
+    },
+    {
+      "from": "bus_result",
+      "to": "select_seat",
+      "median": 50.8,
+      "mean": 83.6,
+      "p90": 140.0,
+      "n": 154
+    },
+    {
+      "from": "select_seat",
+      "to": "payment_initiate",
+      "median": 131.8,
+      "mean": 384.3,
+      "p90": 594.1,
+      "n": 31
+    },
+    {
+      "from": "generate_otp",
+      "to": "verify_otp",
+      "median": 6.0,
+      "mean": 12.5,
+      "p90": 28.1,
+      "n": 495
+    },
+    {
+      "from": "bus_search",
+      "to": "payment_success",
+      "median": 527.0,
+      "mean": 1006.8,
+      "p90": 2410.5,
+      "n": 8
+    }
+  ],
+  "insights": "<h4>Analysis of Bus Ticket Booking App Latency</h4>\n\n<p>The analysis of user flow latency and time-to-action metrics for the bus ticket booking app has been completed. Below are the detailed findings based on the computed latencies between key events.</p>\n\n<h4>SLOWEST TRANSITION</h4>\n<p>The pair with the highest median latency is from <strong>select_seat</strong> to <strong>payment_initiate</strong> with a median latency of <strong>131.8 seconds</strong>. This is significantly outside the benchmark of 60-180 seconds for seat selection and passenger details.</p>\n\n<h4>BOTTLENECK ANALYSIS</h4>\n<p>There are notable bottlenecks in the user flow:</p>\n<ul>\n    <li>The transition from <strong>bus_result</strong> to <strong>select_seat</strong> has a median latency of <strong>50.8 seconds</strong> and a P90 of <strong>140.0 seconds</strong>. This indicates a potential UX issue as the median is already close to the upper limit of the benchmark.</li>\n    <li>The transition from <strong>select_seat</strong> to <strong>payment_initiate</strong> shows a high mean latency of <strong>384.3 seconds</strong> and a P90 of <strong>594.1 seconds</strong>, suggesting a significant technical bottleneck.</li>\n</ul>\n\n<h4>END-TO-END TIME</h4>\n<p>The full search-to-payment flow takes a median of <strong>527.0 seconds</strong> (approximately 8.8 minutes), which is above the competitive benchmark of 3-8 minutes for a healthy flow. This indicates that the overall user experience may be suffering due to excessive latency.</p>\n\n<h4>SPEED IMPROVEMENTS</h4>\n<p>To reduce latency, the following specific strategies can be implemented:</p>\n<ul>\n    <li><strong>Optimize Seat Selection Process:</strong> Streamline the UI and reduce the number of steps required to select a seat. Expected time savings: <strong>30-60 seconds</strong>.</li>\n    <li><strong>Improve Backend Response Times:</strong> Enhance server performance to reduce the time taken to fetch results and process selections. Expected time savings: <strong>20-40 seconds</strong>.</li>\n    <li><strong>Implement Caching Mechanisms:</strong> Use caching for frequently accessed data to speed up the transition from results to seat selection. Expected time savings: <strong>15-30 seconds</strong>.</li>\n</ul>\n\n<p>These improvements can help in aligning the app's performance with industry benchmarks and enhance user satisfaction.</p>",
+  "iterations": 3
+}

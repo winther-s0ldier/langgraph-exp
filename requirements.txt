@@ -1,0 +1,13 @@
+langchain
+langgraph
+pandas
+plotly
+google-generativeai
+openai
+streamlit
+fastapi
+uvicorn
+python-dotenv
+tiktoken
+langchain-google-genai
+langchain-openai
