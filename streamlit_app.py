@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import pandas as pd
+import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -86,8 +87,11 @@ st.divider()
 # Report Display (Full Width)
 if os.path.exists(REPORT_PATH):
     # Get last modified time
+    # Get last modified time (Convert to IST)
     mtime = os.path.getmtime(REPORT_PATH)
-    last_updated = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mtime))
+    dt_utc = datetime.datetime.fromtimestamp(mtime, datetime.timezone.utc)
+    ist_tz = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+    last_updated = dt_utc.astimezone(ist_tz).strftime('%Y-%m-%d %H:%M:%S IST')
     
     st.caption(f"Last updated: {last_updated}")
     
